@@ -770,10 +770,10 @@ body::after {
     <p class="tagline">12 种脱敏规则 · 保留文档格式 · 可回溯还原 · 永久免费</p>
 
     <!-- ★ 下载链接 — 部署时替换为 GitHub Releases 直链 ★ -->
-    <a class="hero-cta" href="#download" id="heroDownloadBtn">
+    <button class="hero-cta" id="heroDownloadBtn">
       免费下载 Windows 版
       <span class="arrow">↓</span>
-    </a>
+    </button>
     <div class="hero-meta">
       <span>v1.0.0</span>
       <span class="dot-sep"></span>
@@ -901,10 +901,10 @@ body::after {
       <p class="cta-sub">免费、安全、简单。下载即用，无需安装。</p>
 
       <!-- ★ 下载链接 — 部署时替换为 GitHub Releases 直链 ★ -->
-      <a class="hero-cta" href="#" id="mainDownloadBtn">
+      <button class="hero-cta" id="mainDownloadBtn">
         下载 Windows 版 v1.0.0
         <span class="arrow">↓</span>
-      </a>
+      </button>
 
       <p class="cta-info">
         支持 Windows 10 及以上版本（64 位）<br>
@@ -979,15 +979,15 @@ body::after {
   }
 
   // ── 下载按钮 ──
-  // ★ 部署时修改此 URL 为 GitHub Releases 直链 ★
   const DOWNLOAD_URL = "https://github.com/hanbills52/lifefa/releases/download/v1.0.0/life_desensitize.exe";
 
   function handleDownload(e) {
+    e.preventDefault();
     window.location.href = DOWNLOAD_URL;
   }
 
-  document.getElementById('heroDownloadBtn').addEventListener('click', handleDownload);
-  document.getElementById('mainDownloadBtn').addEventListener('click', handleDownload);
+  document.getElementById("heroDownloadBtn").addEventListener("click", handleDownload);
+  document.getElementById("mainDownloadBtn").addEventListener("click", handleDownload);
 })();
 </script>
 </body>
