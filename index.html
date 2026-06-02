@@ -774,20 +774,20 @@ body::after {
 
     <!-- ★ 下载链接 — 部署时替换为 GitHub Releases 直链 ★ -->
     <button class="hero-cta" id="heroDownloadBtn">
-      免费下载 Windows 版（高速）
+      免费下载 Windows 版
       <span class="arrow">↓</span>
     </button>
     <div class="hero-meta">
       <span>v1.0.0</span>
       <span class="dot-sep"></span>
-      <span>约 26 MB</span>
+      <span>约 25 MB</span>
       <span class="dot-sep"></span>
       <span>Windows 10 / 11</span>
       <span class="dot-sep"></span>
       <span>64 位</span>
     </div>
     <div style="margin-top:8px;font-size:12px;color:var(--text-faint);">
-      下载慢？<a href="#" id="fallbackLink" style="color:var(--accent);text-decoration:none;">切换 GitHub 直链</a>
+      备用：<a href="#" id="fallbackLink" style="color:var(--accent);text-decoration:none;">GitHub 直链下载</a>
     </div>
   </section>
 
@@ -908,14 +908,14 @@ body::after {
 
       <!-- ★ 下载链接 — 部署时替换为 GitHub Releases 直链 ★ -->
       <button class="hero-cta" id="mainDownloadBtn">
-        下载 Windows 版 v1.0.0（高速）
+        下载 Windows 版 v1.0.0
         <span class="arrow">↓</span>
       </button>
 
       <p class="cta-info">
         支持 Windows 10 及以上版本（64 位）<br>
         下载后双击即可运行。如遇 SmartScreen 提示，请点击"更多信息"→"仍要运行"。<br>
-        <span style="font-size:12px;color:var(--text-faint);">如高速下载不可用，<a href="#" id="fallbackLink2" style="color:var(--accent);text-decoration:none;">点此切换 GitHub 直链</a></span>
+        <span style="font-size:12px;color:var(--text-faint);">如以上链接不可用，<a href="#" id="fallbackLink2" style="color:var(--accent);text-decoration:none;">点此使用 GitHub 直链</a></span>
       </p>
     </div>
   </section>
@@ -986,17 +986,17 @@ body::after {
   }
 
   // ── 下载按钮 ──
-  const DOWNLOAD_URL = "https://ghproxy.com/https://github.com/hanbills52/lifefa/releases/download/v1.0.0/life_desensitize.exe";
+  const DOWNLOAD_URL = "https://wwbbg.lanzoue.com/is12D3qzs9bi";
   const DOWNLOAD_FALLBACK = "https://github.com/hanbills52/lifefa/releases/download/v1.0.0/life_desensitize.exe";
 
   function handleDownload(e) {
     e.preventDefault();
-    window.location.href = DOWNLOAD_URL;
+    window.open(DOWNLOAD_URL, "_blank");
   }
 
   function useFallback(e) {
     e.preventDefault();
-    window.location.href = DOWNLOAD_FALLBACK;
+    window.open(DOWNLOAD_FALLBACK, "_blank");
   }
 
   document.getElementById("heroDownloadBtn").addEventListener("click", handleDownload);
