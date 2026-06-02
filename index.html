@@ -980,14 +980,10 @@ body::after {
 
   // ── 下载按钮 ──
   // ★ 部署时修改此 URL 为 GitHub Releases 直链 ★
-  const DOWNLOAD_URL = '#'; // TODO: 替换为 https://github.com/<user>/<repo>/releases/download/v1.0.0/life_desensitize.exe
+  const DOWNLOAD_URL = "https://github.com/hanbills52/lifefa/releases/download/v1.0.0/life_desensitize.exe";
 
   function handleDownload(e) {
-    if (DOWNLOAD_URL === '#') {
-      e.preventDefault();
-      alert('下载链接尚未配置。请部署时在 HTML 中设置 DOWNLOAD_URL。');
-      return;
-    }
+    window.location.href = DOWNLOAD_URL;
   }
 
   document.getElementById('heroDownloadBtn').addEventListener('click', handleDownload);
