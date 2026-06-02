@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>life法 — 完全本地运行的敏感信息脱敏工具</title>
+<meta name="description" content="life法是一款完全本地运行的敏感信息脱敏桌面应用。12种脱敏规则，保留docx格式，可回溯还原，永久免费。">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   life法 下载页  v1 — 深色磨砂 · 高级排版 · 零依赖
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 设计令牌 ── */
+:root {
+  --bg:        #0f1117;
+  --surface:   rgba(22, 24, 31, 0.55);
+  --surface-hover: rgba(26, 28, 36, 0.72);
+  --surface-raised: rgba(28, 30, 38, 0.65);
+  --border:    rgba(255,255,255,0.05);
+  --border-visible: rgba(255,255,255,0.08);
+  --border-accent: rgba(117,178,200,0.12);
+  --accent:    #75b2c8;
+  --accent-light: #8ec9db;
+  --accent-soft: rgba(117,178,200,0.10);
+  --accent-glow: rgba(117,178,200,0.15);
+  --accent-gradient: linear-gradient(135deg, #75b2c8 0%, #8ec9db 60%, #a0d4e4 100%);
+  --text:      #e4e7ec;
+  --text-dim:  #9399a5;
+  --text-faint: #535966;
+  --radius:    16px;
+  --radius-sm: 10px;
+  --radius-lg: 24px;
+  --radius-xl: 28px;
+  --ease:      cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out:  cubic-bezier(0.19, 1, 0.22, 1);
+  --max-width: 1120px;
+  --section-gap: 120px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+  scroll-padding-top: 100px;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+               "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.65;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   背景系统 — 4层径向光晕 + 网格 + 噪点纹理
+   ═══════════════════════════════════════════════════════════════ */
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    /* 顶部中心 — 主光晕 */
+    radial-gradient(ellipse 80% 55% at 50% 0%,  rgba(117,178,200,0.06) 0%, transparent 60%),
+    /* 左上 — 辅助暖光 */
+    radial-gradient(ellipse 50% 40% at 15% 20%, rgba(117,178,200,0.04) 0%, transparent 55%),
+    /* 右下 — 辅助冷光 */
+    radial-gradient(ellipse 45% 35% at 85% 75%, rgba(100,160,185,0.03) 0%, transparent 55%),
+    /* 中心偏下 — 微弱补光 */
+    radial-gradient(ellipse 60% 45% at 50% 60%, rgba(130,190,210,0.02) 0%, transparent 50%);
+}
+
+/* 网格线 */
+body::after {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  opacity: 0.03;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(117,178,200,0.5) 0, rgba(117,178,200,0.5) 1px, transparent 1px, transparent 160px),
+    repeating-linear-gradient(90deg, rgba(117,178,200,0.5) 0, rgba(117,178,200,0.5) 1px, transparent 1px, transparent 160px);
+}
+
+/* 噪点纹理叠加 */
+.grain {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  opacity: 0.015;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   装饰元素
+   ═══════════════════════════════════════════════════════════════ */
+.bg-art { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+
+/* Hero 区大环 */
+.bg-art .ring-hero {
+  position: absolute;
+  right: -200px; top: -120px;
+  width: 720px; height: 720px;
+  border-radius: 50%;
+  border: 1px solid rgba(117,178,200,0.06);
+  transform: scaleX(0.44) rotate(15deg);
+  animation: slow-spin 90s linear infinite;
+}
+.bg-art .ring-hero-2 {
+  position: absolute;
+  right: -140px; top: -60px;
+  width: 520px; height: 520px;
+  border-radius: 50%;
+  border: 1px dashed rgba(117,178,200,0.04);
+  transform: scaleX(0.42) rotate(22deg);
+  animation: slow-spin 70s linear infinite reverse;
+}
+
+/* 左下斜线组 */
+.bg-art .diagonals {
+  position: absolute;
+  left: 3%; bottom: 28%;
+  width: 220px; height: 180px;
+  opacity: 0.5;
+}
+.bg-art .diagonals::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(135deg, transparent 42%, rgba(117,178,200,0.06) 42%, rgba(117,178,200,0.06) 43%, transparent 43%),
+    linear-gradient(135deg, transparent calc(42% + 24px), rgba(117,178,200,0.04) calc(42% + 24px), rgba(117,178,200,0.04) calc(43% + 24px), transparent calc(43% + 24px)),
+    linear-gradient(135deg, transparent calc(42% + 52px), rgba(117,178,200,0.03) calc(42% + 52px), rgba(117,178,200,0.03) calc(43% + 52px), transparent calc(43% + 52px));
+}
+
+/* 右下圆点群 */
+.bg-art .dots {
+  position: absolute;
+  right: 5%; bottom: 20%;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.bg-art .dots .dr {
+  display: flex; gap: 10px; opacity: 0.08;
+}
+.bg-art .dots .dr span {
+  display: block; border-radius: 50%; background: var(--accent);
+}
+.bg-art .dots .dr:nth-child(1) { gap: 18px; opacity: 0.10; }
+.bg-art .dots .dr:nth-child(1) span { width: 3px; height: 3px; }
+.bg-art .dots .dr:nth-child(1) span:nth-child(1) { width: 5px; height: 5px; }
+.bg-art .dots .dr:nth-child(2) { gap: 12px; }
+.bg-art .dots .dr:nth-child(2) span { width: 2px; height: 2px; }
+.bg-art .dots .dr:nth-child(2) span:nth-child(2) { width: 4px; height: 4px; }
+.bg-art .dots .dr:nth-child(3) { gap: 16px; opacity: 0.05; }
+.bg-art .dots .dr:nth-child(3) span { width: 2px; height: 2px; }
+
+/* 中右十字准线 */
+.bg-art .crosshair {
+  position: absolute;
+  right: 20%; top: 45%;
+  width: 32px; height: 32px;
+  opacity: 0.06;
+}
+.bg-art .crosshair::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 0; right: 0;
+  height: 1px;
+  background: var(--accent);
+}
+.bg-art .crosshair::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 0; bottom: 0;
+  width: 1px;
+  background: var(--accent);
+}
+
+/* 浮动光斑 */
+.bg-art .orb {
+  position: absolute; border-radius: 50%;
+  background: radial-gradient(circle, rgba(117,178,200,0.08) 0%, transparent 70%);
+  filter: blur(40px);
+  animation: float 8s ease-in-out infinite;
+}
+.bg-art .orb-1 { width: 300px; height: 300px; left: 10%; top: 35%; animation-delay: 0s; }
+.bg-art .orb-2 { width: 200px; height: 200px; right: 15%; top: 55%; animation-delay: -3s; }
+.bg-art .orb-3 { width: 250px; height: 250px; left: 45%; top: 70%; animation-delay: -5s; }
+
+@keyframes slow-spin {
+  from { transform: scaleX(0.44) rotate(15deg); }
+  to   { transform: scaleX(0.44) rotate(375deg); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%      { transform: translateY(-24px) scale(1.05); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   页面容器
+   ═══════════════════════════════════════════════════════════════ */
+.page {
+  position: relative; z-index: 1;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   导航栏 — 粘性 + 滚动后磨砂
+   ═══════════════════════════════════════════════════════════════ */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  padding: 16px 0;
+  transition: background 0.35s var(--ease),
+              box-shadow 0.35s var(--ease),
+              padding 0.35s var(--ease);
+}
+.nav.scrolled {
+  background: rgba(15,17,23,0.75);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.3);
+  padding: 10px 0;
+}
+.nav-inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-brand {
+  display: flex; align-items: center; gap: 12px;
+  text-decoration: none; color: var(--text);
+}
+.nav-brand img { width: 36px; height: 36px; border-radius: 10px; }
+.nav-brand span { font-size: 20px; font-weight: 700; letter-spacing: -0.2px; }
+.nav-links {
+  display: flex; gap: 32px; list-style: none;
+}
+.nav-links a {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 14px; font-weight: 500;
+  transition: color 0.2s var(--ease);
+}
+.nav-links a:hover { color: var(--text); }
+
+.nav-dl-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 18px;
+  border-radius: 100px;
+  border: 1px solid rgba(117,178,200,0.2);
+  background: rgba(117,178,200,0.08);
+  color: var(--accent) !important;
+  font-size: 13px !important; font-weight: 600 !important;
+  transition: all 0.2s var(--ease) !important;
+}
+.nav-dl-btn:hover {
+  background: rgba(117,178,200,0.14) !important;
+  border-color: rgba(117,178,200,0.3) !important;
+  color: var(--accent-light) !important;
+}
+
+/* 移动端汉堡菜单 */
+.nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 24px; cursor: pointer; }
+
+/* ═══════════════════════════════════════════════════════════════
+   区块通用
+   ═══════════════════════════════════════════════════════════════ */
+.section { padding: var(--section-gap) 0; }
+.section-label {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+.section-label::before {
+  content: '';
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.section-title {
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 16px;
+  text-wrap: balance;
+}
+.section-desc {
+  font-size: 17px;
+  color: var(--text-dim);
+  max-width: 600px;
+  line-height: 1.7;
+  text-wrap: balance;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Hero 区
+   ═══════════════════════════════════════════════════════════════ */
+.hero {
+  text-align: center;
+  padding: 100px 0 80px;
+}
+.hero-icon {
+  width: 80px; height: 80px;
+  border-radius: 20px;
+  margin: 0 auto 32px;
+  box-shadow: 0 0 40px rgba(117,178,200,0.2), 0 0 80px rgba(117,178,200,0.08);
+  display: block;
+}
+.hero h1 {
+  font-size: clamp(48px, 7vw, 72px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  background: linear-gradient(135deg, #e4e7ec 0%, #b0c4d0 35%, #75b2c8 65%, #8ec9db 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-wrap: balance;
+  margin-bottom: 20px;
+}
+.hero .subtitle {
+  font-size: clamp(17px, 2.2vw, 21px);
+  color: var(--text-dim);
+  font-weight: 400;
+  margin-bottom: 10px;
+  text-wrap: balance;
+}
+.hero .tagline {
+  font-size: 15px;
+  color: var(--text-faint);
+  margin-bottom: 40px;
+  text-wrap: balance;
+}
+
+/* ── 主 CTA ── */
+.hero-cta {
+  display: inline-flex; align-items: center; gap: 14px;
+  padding: 18px 48px;
+  border: none;
+  border-radius: var(--radius);
+  font-family: inherit;
+  font-size: 17px; font-weight: 600;
+  color: var(--bg);
+  background: var(--accent-gradient);
+  box-shadow:
+    0 4px 24px rgba(117,178,200,0.25),
+    0 0 0 6px rgba(117,178,200,0.04),
+    0 0 0 1px rgba(117,178,200,0.08);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s var(--ease);
+  position: relative;
+}
+.hero-cta:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 36px rgba(117,178,200,0.35),
+    0 0 0 12px rgba(117,178,200,0.06),
+    0 0 0 1px rgba(117,178,200,0.12);
+}
+.hero-cta:active { transform: scale(0.97); }
+
+.hero-cta::after {
+  content: '';
+  position: absolute; inset: -3px;
+  border-radius: calc(var(--radius) + 3px);
+  background: var(--accent-gradient);
+  opacity: 0;
+  z-index: -1;
+  filter: blur(16px);
+  transition: opacity 0.3s var(--ease);
+}
+.hero-cta:hover::after { opacity: 0.3; }
+
+.hero-cta .arrow { font-size: 18px; transition: transform 0.3s var(--ease); }
+.hero-cta:hover .arrow { transform: translateY(3px); }
+
+.hero-meta {
+  margin-top: 18px;
+  font-size: 13px; color: var(--text-faint);
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  flex-wrap: wrap;
+}
+.hero-meta span { display: inline-flex; align-items: center; gap: 5px; }
+.hero-meta .dot-sep {
+  width: 3px; height: 3px; border-radius: 50%; background: var(--text-faint);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   功能卡片 2×3 网格
+   ═══════════════════════════════════════════════════════════════ */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 36px;
+}
+.feature-card {
+  background: var(--surface);
+  backdrop-filter: blur(40px) saturate(140%);
+  -webkit-backdrop-filter: blur(40px) saturate(140%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 30px;
+  transition: transform 0.4s var(--ease-out),
+              border-color 0.35s var(--ease),
+              box-shadow 0.35s var(--ease),
+              background 0.35s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+/* 卡片顶部微光 */
+.feature-card::before {
+  content: '';
+  position: absolute; top: 0; left: 20px; right: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(117,178,200,0.15), transparent);
+  opacity: 0;
+  transition: opacity 0.35s var(--ease);
+}
+.feature-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--border-accent);
+  background: var(--surface-raised);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(117,178,200,0.04);
+}
+.feature-card:hover::before { opacity: 1; }
+
+.feature-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: var(--accent-soft);
+  border: 1px solid rgba(117,178,200,0.1);
+  font-size: 24px;
+  margin-bottom: 20px;
+  transition: all 0.35s var(--ease);
+}
+.feature-card:hover .feature-icon {
+  background: rgba(117,178,200,0.16);
+  border-color: rgba(117,178,200,0.2);
+  box-shadow: 0 0 16px rgba(117,178,200,0.12);
+}
+.feature-card h3 {
+  font-size: 18px; font-weight: 600;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+.feature-card p {
+  font-size: 14.5px; color: var(--text-dim);
+  line-height: 1.65;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   三步流程
+   ═══════════════════════════════════════════════════════════════ */
+.steps-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin-top: 36px;
+  position: relative;
+}
+/* 水平连接线 */
+.steps-row::before {
+  content: '';
+  position: absolute;
+  top: 48px; left: calc(16% + 30px); right: calc(16% + 30px);
+  height: 1px;
+  background: repeating-linear-gradient(90deg, rgba(117,178,200,0.12) 0, rgba(117,178,200,0.12) 8px, transparent 8px, transparent 16px);
+}
+.step {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  padding: 0 20px;
+}
+.step-num {
+  display: flex; align-items: center; justify-content: center;
+  width: 56px; height: 56px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1px solid var(--border-visible);
+  font-size: 18px; font-weight: 700;
+  color: var(--accent);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  transition: all 0.35s var(--ease);
+}
+.step:hover .step-num {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(117,178,200,0.15);
+  background: var(--surface-raised);
+}
+.step h3 {
+  font-size: 17px; font-weight: 600;
+  margin-bottom: 8px;
+}
+.step p {
+  font-size: 14px; color: var(--text-dim);
+  line-height: 1.6;
+  margin-bottom: 18px;
+}
+/* 截图 */
+.step-screen {
+  width: 100%;
+  aspect-ratio: 16/10;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: all 0.35s var(--ease);
+}
+.step-screen img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.step:hover .step-screen {
+  border-color: rgba(255,255,255,0.14);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   安全保障
+   ═══════════════════════════════════════════════════════════════ */
+.security {
+  text-align: center;
+}
+.security-points {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 36px;
+}
+.security-card {
+  padding: 40px 28px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  backdrop-filter: blur(40px) saturate(140%);
+  -webkit-backdrop-filter: blur(40px) saturate(140%);
+  border: 1px solid var(--border);
+  transition: border-color 0.35s var(--ease), background 0.35s var(--ease);
+}
+.security-card:hover {
+  border-color: var(--border-visible);
+  background: var(--surface-raised);
+}
+.security-icon {
+  font-size: 36px;
+  margin-bottom: 18px;
+  display: block;
+}
+.security-card h3 {
+  font-size: 17px; font-weight: 600;
+  margin-bottom: 8px;
+}
+.security-card p {
+  font-size: 14px; color: var(--text-dim);
+  line-height: 1.65;
+}
+.security-note {
+  margin-top: 24px;
+  font-size: 13.5px;
+  color: var(--text-faint);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   底部下载 CTA
+   ═══════════════════════════════════════════════════════════════ */
+.cta-section {
+  text-align: center;
+}
+.cta-glass {
+  display: inline-block;
+  padding: 56px 64px;
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  backdrop-filter: blur(40px) saturate(140%);
+  -webkit-backdrop-filter: blur(40px) saturate(140%);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+}
+.cta-glass h2 {
+  font-size: clamp(24px, 3.5vw, 34px);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.cta-glass .cta-sub {
+  font-size: 16px; color: var(--text-dim);
+  margin-bottom: 28px;
+}
+.cta-glass .hero-cta {
+  margin-bottom: 14px;
+}
+.cta-glass .cta-info {
+  font-size: 13.5px; color: var(--text-faint);
+  line-height: 1.7;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   页脚
+   ═══════════════════════════════════════════════════════════════ */
+.footer {
+  text-align: center;
+  padding: 48px 0;
+  border-top: 1px solid rgba(255,255,255,0.03);
+  margin-top: 80px;
+}
+.footer p {
+  font-size: 13.5px; color: var(--text-faint);
+  line-height: 1.8;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   滚动渐显动画
+   ═══════════════════════════════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.8s var(--ease-out),
+              transform 0.8s var(--ease-out);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* 卡片错开延迟 */
+.reveal-delay-1 { transition-delay: 0.05s; }
+.reveal-delay-2 { transition-delay: 0.10s; }
+.reveal-delay-3 { transition-delay: 0.15s; }
+.reveal-delay-4 { transition-delay: 0.20s; }
+.reveal-delay-5 { transition-delay: 0.25s; }
+.reveal-delay-6 { transition-delay: 0.30s; }
+
+/* ═══════════════════════════════════════════════════════════════
+   响应式 — 平板
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  :root { --section-gap: 80px; }
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .steps-row {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .steps-row::before { display: none; }
+  .security-points {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+    margin-left: auto; margin-right: auto;
+  }
+  .nav-links { gap: 20px; }
+  .cta-glass { padding: 40px 32px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   响应式 — 手机
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  :root { --section-gap: 64px; }
+  .page { padding: 0 20px; }
+  .nav-inner { padding: 0 20px; }
+
+  .nav-links { display: none; }
+  .nav-toggle { display: block; }
+  .nav-links.open {
+    display: flex; flex-direction: column;
+    position: absolute; top: 100%; left: 0; right: 0;
+    background: rgba(15,17,23,0.95);
+    backdrop-filter: blur(24px);
+    padding: 20px 32px; gap: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .hero { padding: 60px 0 50px; }
+  .hero h1 { font-size: clamp(38px, 10vw, 52px); }
+  .hero-icon { width: 64px; height: 64px; border-radius: 16px; }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .feature-card { padding: 28px 24px; }
+
+  .steps-row {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .security-points {
+    grid-template-columns: 1fr;
+  }
+
+  .cta-glass {
+    padding: 36px 24px;
+    border-radius: var(--radius-lg);
+  }
+  .hero-cta { padding: 16px 36px; font-size: 16px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   减少动画
+   ═══════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- 背景装饰 -->
+<div class="grain" aria-hidden="true"></div>
+<div class="bg-art" aria-hidden="true">
+  <div class="ring-hero"></div>
+  <div class="ring-hero-2"></div>
+  <div class="diagonals"></div>
+  <div class="dots">
+    <div class="dr"><span></span><span></span><span></span></div>
+    <div class="dr"><span></span><span></span><span></span><span></span></div>
+    <div class="dr"><span></span><span></span><span></span><span></span><span></span></div>
+  </div>
+  <div class="crosshair"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+   导航栏
+   ═══════════════════════════════════════════════════════════════ -->
+<nav class="nav" id="navbar">
+  <div class="nav-inner">
+    <a href="#" class="nav-brand">
+      <img src="logo_256.png" alt="life法" width="36" height="36">
+      <span>life法</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="菜单">&#9776;</button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#features">功能特点</a></li>
+      <li><a href="#howto">如何使用</a></li>
+      <li><a href="#security">安全保障</a></li>
+      <li><a href="#download" class="nav-dl-btn">&#8595; 下载</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main class="page">
+
+  <!-- ═══════════════════════════════════════════════════════════
+     Hero
+     ═══════════════════════════════════════════════════════════ -->
+  <section class="hero section">
+    <img class="hero-icon" src="logo_256.png" alt="life法" width="80" height="80">
+    <h1>life法</h1>
+    <p class="subtitle">完全本地运行的敏感信息脱敏工具</p>
+    <p class="tagline">12 种脱敏规则 · 保留文档格式 · 可回溯还原 · 永久免费</p>
+
+    <!-- ★ 下载链接 — 部署时替换为 GitHub Releases 直链 ★ -->
+    <a class="hero-cta" href="#download" id="heroDownloadBtn">
+      免费下载 Windows 版
+      <span class="arrow">↓</span>
+    </a>
+    <div class="hero-meta">
+      <span>v1.0.0</span>
+      <span class="dot-sep"></span>
+      <span>约 26 MB</span>
+      <span class="dot-sep"></span>
+      <span>Windows 10 / 11</span>
+      <span class="dot-sep"></span>
+      <span>64 位</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     功能亮点
+     ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="features">
+    <div class="reveal">
+      <span class="section-label">功能特点</span>
+      <h2 class="section-title">为什么选择 life法？</h2>
+      <p class="section-desc">专为法律从业者和注重隐私的用户设计，在保证数据安全的前提下，高效完成文档脱敏。</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon">🔒</div>
+        <h3>完全本地运行</h3>
+        <p>所有脱敏处理在您的电脑上完成，文件和敏感数据绝不上传至任何服务器。您完全掌控自己的数据。</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon">🏷</div>
+        <h3>12 种脱敏规则</h3>
+        <p>覆盖身份证号、手机号、邮箱、地址、公司名称、银行账号、统一社会信用代码、日期、金额、座机号、人名、机构名称。</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <div class="feature-icon">📝</div>
+        <h3>Word 格式完整保留</h3>
+        <p>脱敏后的 .docx 文档保留全部字体、加粗、颜色、表格和段落格式，无需重新排版，可直接使用。同时支持 .txt 纯文本。</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-4">
+        <div class="feature-icon">📋</div>
+        <h3>可回溯映射表</h3>
+        <p>每次脱敏自动生成完整映射对照表，清晰的&ldquo;原名&rarr;替身&rdquo;关系一目了然。方便核查哪些内容被替换，也可按需手动调整映射规则后重新脱敏，实时查看替换情况。</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-5">
+        <div class="feature-icon">🆓</div>
+        <h3>永久免费</h3>
+        <p>life法 完全免费，无付费计划、无隐藏费用、无功能限制。我们相信数据安全应该是每个人的基本权利。</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-6">
+        <div class="feature-icon">⚡</div>
+        <h3>简单易用</h3>
+        <p>拖拽文件、勾选规则、点击按钮即可完成。无需注册账号，无需复杂配置。法律从业者即刻上手。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     如何使用（三步）
+     ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="howto">
+    <div class="reveal" style="text-align:center">
+      <span class="section-label">使用指南</span>
+      <h2 class="section-title">三步完成脱敏</h2>
+      <p class="section-desc" style="margin:0 auto">无需学习，打开即用。从文件到脱敏结果，只需几秒钟。</p>
+    </div>
+
+    <div class="steps-row">
+      <div class="step reveal reveal-delay-1">
+        <div class="step-num">01</div>
+        <h3>选择文件</h3>
+        <p>将 .txt 或 .docx 文件拖入窗口，或点击按钮选择文件。支持单个文件处理。</p>
+        <div class="step-screen"><img src="screenshot_upload.png" alt="选择文件" loading="lazy"></div>
+      </div>
+      <div class="step reveal reveal-delay-2">
+        <div class="step-num">02</div>
+        <h3>勾选规则</h3>
+        <p>12 种脱敏规则默认全选，按需自由组合。身份证、手机号、地址……逐一勾选即可。</p>
+        <div class="step-screen"><img src="screenshot_rules.png" alt="勾选规则" loading="lazy"></div>
+      </div>
+      <div class="step reveal reveal-delay-3">
+        <div class="step-num">03</div>
+        <h3>一键脱敏</h3>
+        <p>点击按钮，脱敏引擎立即在本地处理，几秒内完成。可预览结果，保存脱敏文件和映射表。</p>
+        <div class="step-screen"><img src="screenshot_result.png" alt="一键脱敏" loading="lazy"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     安全保障
+     ═══════════════════════════════════════════════════════════ -->
+  <section class="section security" id="security">
+    <div class="reveal">
+      <span class="section-label">数据安全</span>
+      <h2 class="section-title">您的数据，绝对安全</h2>
+      <p class="section-desc" style="margin:0 auto">我们不拿隐私做交易。以下是我们的承诺。</p>
+    </div>
+
+    <div class="security-points">
+      <div class="security-card reveal reveal-delay-1">
+        <span class="security-icon">💻</span>
+        <h3>本地处理</h3>
+        <p>脱敏引擎完全运行在您的电脑上。文件内容永远不会通过网络传输到任何服务器，断网也能正常使用。</p>
+      </div>
+      <div class="security-card reveal reveal-delay-2">
+        <span class="security-icon">📡</span>
+        <h3>离线可用</h3>
+        <p>核心脱敏功能不依赖任何网络服务。您可以在完全离线的环境中安心处理敏感文件，不受网络限制。</p>
+      </div>
+      <div class="security-card reveal reveal-delay-3">
+        <span class="security-icon">🛡</span>
+        <h3>隐私第一</h3>
+        <p>我们不收集任何使用数据，不上传任何文件内容，不需要注册账号。您的隐私受到绝对尊重。</p>
+      </div>
+    </div>
+
+    <p class="security-note reveal">life法 是开源软件，您可以自由审查全部源代码，确保没有任何后门或数据泄露风险。</p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     下载 CTA
+     ═══════════════════════════════════════════════════════════ -->
+  <section class="section cta-section" id="download">
+    <div class="cta-glass reveal">
+      <h2>开始使用 life法</h2>
+      <p class="cta-sub">免费、安全、简单。下载即用，无需安装。</p>
+
+      <!-- ★ 下载链接 — 部署时替换为 GitHub Releases 直链 ★ -->
+      <a class="hero-cta" href="#" id="mainDownloadBtn">
+        下载 Windows 版 v1.0.0
+        <span class="arrow">↓</span>
+      </a>
+
+      <p class="cta-info">
+        支持 Windows 10 及以上版本（64 位）<br>
+        下载后双击即可运行。如遇 SmartScreen 提示，请点击"更多信息"→"仍要运行"。
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══════════════════════════════════════════════════════════════
+   页脚
+   ═══════════════════════════════════════════════════════════════ -->
+<footer class="footer">
+  <p>
+    <strong>life法</strong> · 敏感信息脱敏工具<br>
+    完全本地运行 · 数据安全无忧
+  </p>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════════
+   Script
+   ═══════════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+  'use strict';
+
+  // ── 导航滚动效果 ──
+  const navbar = document.getElementById('navbar');
+  let scrollTicking = false;
+  window.addEventListener('scroll', () => {
+    if (!scrollTicking) {
+      requestAnimationFrame(() => {
+        navbar.classList.toggle('scrolled', window.scrollY > 60);
+        scrollTicking = false;
+      });
+      scrollTicking = true;
+    }
+  }, { passive: true });
+
+  // ── 移动端汉堡菜单 ──
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.getElementById('navLinks');
+  navToggle.addEventListener('click', () => {
+    navLinks.classList.toggle('open');
+  });
+  // 点击菜单项后关闭
+  navLinks.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      navLinks.classList.remove('open');
+    });
+  });
+
+  // ── 滚动渐显动画（Intersection Observer）──
+  const revealEls = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {
+      threshold: 0.12,
+      rootMargin: '0px 0px -40px 0px',
+    });
+    revealEls.forEach(el => observer.observe(el));
+  } else {
+    // 回退：直接显示
+    revealEls.forEach(el => el.classList.add('visible'));
+  }
+
+  // ── 下载按钮 ──
+  // ★ 部署时修改此 URL 为 GitHub Releases 直链 ★
+  const DOWNLOAD_URL = '#'; // TODO: 替换为 https://github.com/<user>/<repo>/releases/download/v1.0.0/life_desensitize.exe
+
+  function handleDownload(e) {
+    if (DOWNLOAD_URL === '#') {
+      e.preventDefault();
+      alert('下载链接尚未配置。请部署时在 HTML 中设置 DOWNLOAD_URL。');
+      return;
+    }
+  }
+
+  document.getElementById('heroDownloadBtn').addEventListener('click', handleDownload);
+  document.getElementById('mainDownloadBtn').addEventListener('click', handleDownload);
+})();
+</script>
+</body>
+</html>
