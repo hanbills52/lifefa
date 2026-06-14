@@ -6,11 +6,11 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>life法 — 完全本地运行的敏感信息脱敏工具</title>
-<meta name="description" content="life法是一款完全本地运行的敏感信息脱敏桌面应用。12种脱敏规则，保留docx格式，可回溯还原，永久免费。">
+<title>life法 V4.0 — 完全本地运行的敏感信息脱敏工具</title>
+<meta name="description" content="life法 V4.0：自定义脱敏 + AI混合人名识别 + 三步审查工作流。12种脱敏规则，保留docx格式，可回溯映射表，完全本地运行，永久免费。">
 <style>
 /* ═══════════════════════════════════════════════════════════════
-   life法 下载页  v1 — 深色磨砂 · 高级排版 · 零依赖
+   life法 下载页  v2 — 深色磨砂 · 高级排版 · 零依赖
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── 设计令牌 ── */
@@ -236,7 +236,7 @@ body::after {
 .nav-brand img { width: 36px; height: 36px; border-radius: 10px; }
 .nav-brand span { font-size: 20px; font-weight: 700; letter-spacing: -0.2px; }
 .nav-links {
-  display: flex; gap: 32px; list-style: none;
+  display: flex; gap: 28px; list-style: none;
 }
 .nav-links a {
   color: var(--text-dim);
@@ -531,6 +531,96 @@ body::after {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   脱敏思路 — 四层递进卡片
+   ═══════════════════════════════════════════════════════════════ */
+.methodology-layers {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 36px;
+}
+.layer-card {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 28px;
+  align-items: start;
+  padding: 30px 32px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  backdrop-filter: blur(40px) saturate(140%);
+  -webkit-backdrop-filter: blur(40px) saturate(140%);
+  border: 1px solid var(--border);
+  transition: all 0.35s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+.layer-card::after {
+  content: '';
+  position: absolute;
+  left: 90px; top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(117,178,200,0.08), transparent);
+  opacity: 0;
+  transition: opacity 0.35s var(--ease);
+}
+.layer-card:hover {
+  border-color: var(--border-visible);
+  background: var(--surface-raised);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+.layer-card:hover::after { opacity: 1; }
+.layer-num {
+  width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 15px;
+  background: var(--accent-soft);
+  border: 1px solid rgba(117,178,200,0.12);
+  font-size: 20px; font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+  transition: all 0.35s var(--ease);
+}
+.layer-card:hover .layer-num {
+  border-color: rgba(117,178,200,0.3);
+  box-shadow: 0 0 20px rgba(117,178,200,0.15);
+}
+.layer-body h3 {
+  font-size: 18px; font-weight: 600;
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+.layer-body .layer-tag {
+  display: inline-block;
+  font-size: 10.5px; font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 2px 10px;
+  border-radius: 100px;
+  margin-bottom: 10px;
+  letter-spacing: 0.3px;
+}
+.layer-body p {
+  font-size: 14.5px; color: var(--text-dim);
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+.layer-body .layer-detail {
+  display: flex; flex-wrap: wrap; gap: 7px;
+}
+.layer-body .layer-detail span {
+  font-size: 12.5px; color: var(--text-faint);
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 3px 10px;
+  border-radius: 6px;
+  transition: all 0.2s var(--ease);
+}
+.layer-card:hover .layer-body .layer-detail span {
+  border-color: rgba(255,255,255,0.08);
+  color: var(--text-dim);
+}
+
+/* ═══════════════════════════════════════════════════════════════
    安全保障
    ═══════════════════════════════════════════════════════════════ */
 .security {
@@ -702,6 +792,13 @@ body::after {
     grid-template-columns: 1fr;
   }
 
+  .layer-card {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 24px;
+  }
+  .layer-card::after { display: none; }
+
   .cta-glass {
     padding: 36px 24px;
     border-radius: var(--radius-lg);
@@ -755,6 +852,7 @@ body::after {
     <ul class="nav-links" id="navLinks">
       <li><a href="#features">功能特点</a></li>
       <li><a href="#howto">如何使用</a></li>
+      <li><a href="#methodology">脱敏思路</a></li>
       <li><a href="#security">安全保障</a></li>
       <li><a href="#download" class="nav-dl-btn">&#8595; 下载</a></li>
     </ul>
@@ -768,9 +866,9 @@ body::after {
      ═══════════════════════════════════════════════════════════ -->
   <section class="hero section">
     <img class="hero-icon" src="logo_256.png" alt="life法" width="80" height="80">
-    <h1>life法</h1>
+    <h1>life法 V4.0</h1>
     <p class="subtitle">完全本地运行的敏感信息脱敏工具</p>
-    <p class="tagline">12 种脱敏规则 · 保留文档格式 · 可回溯还原 · 永久免费</p>
+    <p class="tagline">自定义脱敏 · AI 混合人名识别 · 三步审查工作流 · 格式完整保留 · 永久免费</p>
 
     <!-- ★ 下载链接 — 部署时替换为 GitHub Releases 直链 ★ -->
     <button class="hero-cta" id="heroDownloadBtn">
@@ -778,9 +876,9 @@ body::after {
       <span class="arrow">↓</span>
     </button>
     <div class="hero-meta">
-      <span>v2.1.0</span>
+      <span>v4.0.0</span>
       <span class="dot-sep"></span>
-      <span>约 26 MB</span>
+      <span>约 413 MB</span>
       <span class="dot-sep"></span>
       <span>Windows 10 / 11</span>
       <span class="dot-sep"></span>
@@ -798,71 +896,154 @@ body::after {
     <div class="reveal">
       <span class="section-label">功能特点</span>
       <h2 class="section-title">为什么选择 life法？</h2>
-      <p class="section-desc">专为法律从业者和注重隐私的用户设计，在保证数据安全的前提下，高效完成文档脱敏。</p>
+      <p class="section-desc">专为法律从业者和注重隐私的用户设计。V4.0 带来自定义脱敏、AI 混合人名识别和三步审查工作流。</p>
     </div>
 
     <div class="features-grid">
       <div class="feature-card reveal reveal-delay-1">
         <div class="feature-icon">🔒</div>
         <h3>完全本地运行</h3>
-        <p>所有脱敏处理在您的电脑上完成，文件和敏感数据绝不上传至任何服务器。您完全掌控自己的数据。</p>
+        <p>所有脱敏处理在您的电脑上完成，文件内容绝不上传至任何服务器。断网也能正常使用，您完全掌控自己的数据。</p>
       </div>
       <div class="feature-card reveal reveal-delay-2">
-        <div class="feature-icon">🏷</div>
-        <h3>12 种脱敏规则</h3>
-        <p>覆盖身份证号、手机号、邮箱、地址、公司名称、银行账号、统一社会信用代码、日期、金额、座机号、人名、机构名称。</p>
+        <div class="feature-icon">🧠</div>
+        <h3>AI 混合人名识别</h3>
+        <p>ONNX BERT-NER 深度学习模型 + 百家姓规则引擎双通道并行，三阶层合并策略。精准识别中国人名，内置 300+ 假阳性黑名单防误报。</p>
       </div>
       <div class="feature-card reveal reveal-delay-3">
-        <div class="feature-icon">📝</div>
-        <h3>Word 格式完整保留</h3>
-        <p>脱敏后的 .docx 文档保留全部字体、加粗、颜色、表格和段落格式，无需重新排版，可直接使用。同时支持 .txt 纯文本。</p>
+        <div class="feature-icon">🏷</div>
+        <h3>自定义脱敏 + 排除</h3>
+        <p>支持手动添加引擎漏检的人名和公司名，也可将特定实体加入排除列表保留不处理。自定义规则自动持久化，下次启动依然有效。</p>
       </div>
       <div class="feature-card reveal reveal-delay-4">
-        <div class="feature-icon">📋</div>
-        <h3>可回溯映射表</h3>
-        <p>每次脱敏自动生成完整映射对照表，清晰的&ldquo;原名&rarr;替身&rdquo;关系一目了然。方便核查哪些内容被替换，也可按需手动调整映射规则后重新脱敏，实时查看替换情况。</p>
+        <div class="feature-icon">🔍</div>
+        <h3>预扫描审查</h3>
+        <p>脱敏前先预览所有检测到的实体：人名、公司、地址、机构、身份证号、手机号等。逐项审查确认后再执行脱敏，杜绝意外替换。</p>
       </div>
       <div class="feature-card reveal reveal-delay-5">
-        <div class="feature-icon">🆓</div>
-        <h3>永久免费</h3>
-        <p>life法 完全免费，无付费计划、无隐藏费用、无功能限制。我们相信数据安全应该是每个人的基本权利。</p>
+        <div class="feature-icon">📝</div>
+        <h3>格式保留 + 双栏对比</h3>
+        <p>脱敏后的 .docx 保留全部字体、加粗、颜色、表格格式，无需重新排版。双栏并排预览原文和脱敏结果，差异一目了然。</p>
       </div>
       <div class="feature-card reveal reveal-delay-6">
-        <div class="feature-icon">⚡</div>
-        <h3>简单易用</h3>
-        <p>拖拽文件、勾选规则、点击按钮即可完成。无需注册账号，无需复杂配置。法律从业者即刻上手。</p>
+        <div class="feature-icon">📋</div>
+        <h3>可回溯映射表</h3>
+        <p>每次脱敏自动生成完整映射对照表，清晰的"原名 → 替身"关系。方便核查替换内容，也可按需手动调整后重新脱敏。同时支持 .txt 和 .docx。</p>
       </div>
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════════════════
-     如何使用（三步）
+     如何使用（V4.0 三步审查工作流）
      ═══════════════════════════════════════════════════════════ -->
   <section class="section" id="howto">
     <div class="reveal" style="text-align:center">
       <span class="section-label">使用指南</span>
-      <h2 class="section-title">三步完成脱敏</h2>
-      <p class="section-desc" style="margin:0 auto">无需学习，打开即用。从文件到脱敏结果，只需几秒钟。</p>
+      <h2 class="section-title">三步审查工作流</h2>
+      <p class="section-desc" style="margin:0 auto">V4.0 全新设计：先审查、后脱敏。在脱敏前就能看到所有将被处理的敏感信息。</p>
     </div>
 
     <div class="steps-row">
       <div class="step reveal reveal-delay-1">
         <div class="step-num">01</div>
-        <h3>选择文件</h3>
-        <p>将 .txt 或 .docx 文件拖入窗口，或点击按钮选择文件。支持单个文件处理。</p>
-        <div class="step-screen"><img src="screenshot_upload.png" alt="选择文件" loading="lazy"></div>
+        <h3>上传文件</h3>
+        <p>将 .txt 或 .docx 文件拖入窗口，或点击按钮选择文件。引擎自动识别文件格式并提取全文内容。</p>
+        <div class="step-screen"><img src="screenshot_upload.png" alt="上传文件" loading="lazy"></div>
       </div>
       <div class="step reveal reveal-delay-2">
         <div class="step-num">02</div>
-        <h3>勾选规则</h3>
-        <p>12 种脱敏规则默认全选，按需自由组合。身份证、手机号、地址……逐一勾选即可。</p>
-        <div class="step-screen"><img src="screenshot_rules.png" alt="勾选规则" loading="lazy"></div>
+        <h3>预扫描审查</h3>
+        <p>引擎自动扫描全文，列出所有检测到的敏感实体。您可以添加漏检项、标记排除项、增删自定义规则，确认无误后再进入脱敏。</p>
+        <div class="step-screen"><img src="screenshot_rules.png" alt="预扫描审查" loading="lazy"></div>
       </div>
       <div class="step reveal reveal-delay-3">
         <div class="step-num">03</div>
-        <h3>一键脱敏</h3>
-        <p>点击按钮，脱敏引擎立即在本地处理，几秒内完成。可预览结果，保存脱敏文件和映射表。</p>
-        <div class="step-screen"><img src="screenshot_result.png" alt="一键脱敏" loading="lazy"></div>
+        <h3>确认脱敏</h3>
+        <p>一键执行脱敏，双栏并排对比原文和脱敏结果。确认无误后保存脱敏文件和可回溯映射表，.docx 格式完整保留。</p>
+        <div class="step-screen"><img src="screenshot_result.png" alt="确认脱敏" loading="lazy"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     脱敏思路 — 四层递进策略
+     ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="methodology">
+    <div class="reveal">
+      <span class="section-label">脱敏思路</span>
+      <h2 class="section-title">分层递进，AI 辅助</h2>
+      <p class="section-desc">life法 采用四层递进式脱敏策略，从精确字符串匹配到 AI 上下文理解，逐层深入，兼顾精度与召回。</p>
+    </div>
+
+    <div class="methodology-layers">
+      <!-- 第一层 -->
+      <div class="layer-card reveal reveal-delay-1">
+        <div class="layer-num">1</div>
+        <div class="layer-body">
+          <h3>精确字符串替换</h3>
+          <span class="layer-tag">自定义优先</span>
+          <p>用户手动指定的实体在所有规则引擎启动前先执行精确全字匹配替换。人名统一分配为「人员A / 人员B / 人员C」，公司名统一分配为「公司A / 公司B / 公司C」，保证全文代号一致。</p>
+          <div class="layer-detail">
+            <span>精确全字匹配</span>
+            <span>代号预分配</span>
+            <span>跨段落一致</span>
+            <span>持久化保存</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第二层 -->
+      <div class="layer-card reveal reveal-delay-2">
+        <div class="layer-num">2</div>
+        <div class="layer-body">
+          <h3>正则规则引擎</h3>
+          <span class="layer-tag">可配置 · 高精度</span>
+          <p>7 种简单规则通过 JSON 配置文件驱动，无需改代码即可增删调整。支持「前N位保留 + 中间打码 + 后M位保留」的灵活脱敏格式。每条规则独立启用/禁用，用户可按需自由组合。</p>
+          <div class="layer-detail">
+            <span>身份证号 · 前6+****+后4</span>
+            <span>手机号 · 前3+****+后4</span>
+            <span>统一社会信用代码</span>
+            <span>邮箱 · 座机号</span>
+            <span>日期 · 金额</span>
+            <span>JSON 热配置</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第三层 -->
+      <div class="layer-card reveal reveal-delay-3">
+        <div class="layer-num">3</div>
+        <div class="layer-body">
+          <h3>上下文感知规则 + AI 混合识别</h3>
+          <span class="layer-tag">核心引擎 · BERT-NER + 规则双通道</span>
+          <p>5 条复杂规则由 Python 函数实现，具备上下文理解能力。其中人名识别采用<strong>双通道混合架构</strong>：ONNX BERT-NER 深度学习模型（精准、零误报）与百家姓滑窗 + 职位锚定规则引擎（覆盖、高召回）并行扫描，经三阶层策略合并去重。公司名、机构名、地址和银行账号也均有专用上下文规则。</p>
+          <div class="layer-detail">
+            <span>人名 · ONNX + 规则双通道</span>
+            <span>324 假阳性黑名单</span>
+            <span>公司名 · 全称+简称关联</span>
+            <span>机构名 · 银行/政府分类</span>
+            <span>地址 · 省市保留+细节打码</span>
+            <span>银行账号 · 多格式兼容</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第四层 -->
+      <div class="layer-card reveal reveal-delay-4">
+        <div class="layer-num">4</div>
+        <div class="layer-body">
+          <h3>精确格式回写</h3>
+          <span class="layer-tag">docx · run 级别精度</span>
+          <p>对于 .docx 文件，引擎使用 difflib.SequenceMatcher 精确追踪原文与脱敏文本之间的每一个变更区间。间隔 ≤4 字符的碎片变更自动合并为单一区间，然后逐 run 回写到 Word 文档的 XML 结构中，完整保留字体、颜色、加粗、斜体、字号等全部格式。同时支持全文预扫 + 逐段落独立脱敏，保证跨段落公司编号和人名代号的一致性。</p>
+          <div class="layer-detail">
+            <span>difflib 精确区间追踪</span>
+            <span>碎片合并（≤4字符）</span>
+            <span>run 级别 XML 回写</span>
+            <span>全文预扫 + 逐段脱敏</span>
+            <span>跨段落代号一致</span>
+            <span>表格 + 段落全覆盖</span>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -886,7 +1067,7 @@ body::after {
       <div class="security-card reveal reveal-delay-2">
         <span class="security-icon">📡</span>
         <h3>离线可用</h3>
-        <p>核心脱敏功能不依赖任何网络服务。您可以在完全离线的环境中安心处理敏感文件，不受网络限制。</p>
+        <p>核心脱敏功能不依赖任何网络服务。ONNX AI 模型内嵌在应用中，您可以在完全离线的环境中处理敏感文件。</p>
       </div>
       <div class="security-card reveal reveal-delay-3">
         <span class="security-icon">🛡</span>
@@ -903,12 +1084,12 @@ body::after {
      ═══════════════════════════════════════════════════════════ -->
   <section class="section cta-section" id="download">
     <div class="cta-glass reveal">
-      <h2>开始使用 life法</h2>
+      <h2>开始使用 life法 V4.0</h2>
       <p class="cta-sub">免费、安全、简单。下载即用，无需安装。</p>
 
-      <!-- ★ 下载链接 — 部署时替换为 GitHub Releases 直链 ★ -->
+      <!-- ★ 下载链接 — 夸克网盘 / GitHub Releases 备用 ★ -->
       <button class="hero-cta" id="mainDownloadBtn">
-        下载 Windows 版 v2.1.0
+        下载 Windows 版 v4.0.0
         <span class="arrow">↓</span>
       </button>
 
@@ -927,7 +1108,7 @@ body::after {
    ═══════════════════════════════════════════════════════════════ -->
 <footer class="footer">
   <p>
-    <strong>life法</strong> · 敏感信息脱敏工具<br>
+    <strong>life法 V4.0</strong> · 敏感信息脱敏工具<br>
     完全本地运行 · 数据安全无忧
   </p>
 </footer>
@@ -986,9 +1167,8 @@ body::after {
   }
 
   // ── 下载按钮 ──
-  // ★ 蓝奏云上传后替换此链接
-  const DOWNLOAD_URL = "https://wwbbg.lanzoue.com/ieuGj3r2zofc";
-  const DOWNLOAD_FALLBACK = "https://github.com/hanbills52/hanbill-/releases/download/v2.1.0/life%E6%B3%95_V2.1.zip";
+  const DOWNLOAD_URL = "https://pan.quark.cn/s/049504d44cc2";
+  const DOWNLOAD_FALLBACK = "https://github.com/hanbills52/hanbill-/releases/download/v4.0.0/life._V4.0.zip";
 
   function handleDownload(e) {
     e.preventDefault();
