@@ -6,8 +6,8 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>life法 V4.0 — 完全本地运行的敏感信息脱敏工具</title>
-<meta name="description" content="life法 V4.0：自定义脱敏 + AI混合人名识别 + 三步审查工作流。12种脱敏规则，保留docx格式，可回溯映射表，完全本地运行，永久免费。">
+<title>life法 V5.1 — 完全本地运行的敏感信息脱敏工具</title>
+<meta name="description" content="life法 V5.1：分块推理ONNX NER + 预审统一引擎 + 天干假名 + 15种脱敏规则。PDF遮罩，保留docx/PDF格式，可回溯映射表，完全本地运行，永久免费。">
 <style>
 /* ═══════════════════════════════════════════════════════════════
    life法 下载页  v2 — 深色磨砂 · 高级排版 · 零依赖
@@ -866,9 +866,9 @@ body::after {
      ═══════════════════════════════════════════════════════════ -->
   <section class="hero section">
     <img class="hero-icon" src="logo_256.png" alt="life法" width="80" height="80">
-    <h1>life法 V4.0</h1>
+    <h1>life法 V5.1</h1>
     <p class="subtitle">完全本地运行的敏感信息脱敏工具</p>
-    <p class="tagline">自定义脱敏 · AI 混合人名识别 · 三步审查工作流 · 格式完整保留 · 永久免费</p>
+    <p class="tagline">分块推理 ONNX NER · 天干假名法 · 预审统一引擎 · PDF遮罩 · 15类规则 · 永久免费</p>
 
     <!-- ★ 下载链接 — 部署时替换为 GitHub Releases 直链 ★ -->
     <button class="hero-cta" id="heroDownloadBtn">
@@ -876,9 +876,9 @@ body::after {
       <span class="arrow">↓</span>
     </button>
     <div class="hero-meta">
-      <span>v4.0.0</span>
+      <span>v5.1.0</span>
       <span class="dot-sep"></span>
-      <span>约 413 MB</span>
+      <span>约 129 MB</span>
       <span class="dot-sep"></span>
       <span>Windows 10 / 11</span>
       <span class="dot-sep"></span>
@@ -896,7 +896,7 @@ body::after {
     <div class="reveal">
       <span class="section-label">功能特点</span>
       <h2 class="section-title">为什么选择 life法？</h2>
-      <p class="section-desc">专为法律从业者和注重隐私的用户设计。V4.0 带来自定义脱敏、AI 混合人名识别和三步审查工作流。</p>
+      <p class="section-desc">专为法律从业者和注重隐私的用户设计。V5.1 采用分块推理引擎解决 BERT 长文本注意力退化，预审与实际脱敏使用统一 ONNX BERT-NER 模型，自定义实体实时可见。</p>
     </div>
 
     <div class="features-grid">
@@ -907,23 +907,23 @@ body::after {
       </div>
       <div class="feature-card reveal reveal-delay-2">
         <div class="feature-icon">🧠</div>
-        <h3>AI 混合人名识别</h3>
-        <p>ONNX BERT-NER 深度学习模型 + 百家姓规则引擎双通道并行，三阶层合并策略。精准识别中国人名，内置 300+ 假阳性黑名单防误报。</p>
+        <h3>ONNX BERT-NER 分块推理</h3>
+        <p>bert-base-chinese-ner 深度学习模型驱动。V5.1 新增 100-token 分块推理引擎，彻底解决 BERT 长文本注意力退化——即使人名在 1300 字法律文书的末尾也能精准识别。INT8 量化体积压缩 75%，精度基本无损。</p>
       </div>
       <div class="feature-card reveal reveal-delay-3">
         <div class="feature-icon">🏷</div>
-        <h3>自定义脱敏 + 排除</h3>
-        <p>支持手动添加引擎漏检的人名和公司名，也可将特定实体加入排除列表保留不处理。自定义规则自动持久化，下次启动依然有效。</p>
+        <h3>自定义脱敏 + 即时反馈</h3>
+        <p>添加自定义人名或公司名后立即在审查面板可见（金色边框 ✏️ 标记），自动走天干假名命名体系（甲某/乙某/丙某）。点击即可删除。支持一键排除，自定义规则自动持久化。</p>
       </div>
       <div class="feature-card reveal reveal-delay-4">
         <div class="feature-icon">🔍</div>
-        <h3>预扫描审查</h3>
-        <p>脱敏前先预览所有检测到的实体：人名、公司、地址、机构、身份证号、手机号等。逐项审查确认后再执行脱敏，杜绝意外替换。</p>
+        <h3>统一预审引擎</h3>
+        <p>V5.1 预审与实际脱敏使用同一 ONNX BERT-NER 引擎，你在审查界面看到的人名列表与最终脱敏结果完全一致。不再有两套引擎"各说各话"的割裂体验。</p>
       </div>
       <div class="feature-card reveal reveal-delay-5">
         <div class="feature-icon">📝</div>
-        <h3>格式保留 + 双栏对比</h3>
-        <p>脱敏后的 .docx 保留全部字体、加粗、颜色、表格格式，无需重新排版。双栏并排预览原文和脱敏结果，差异一目了然。</p>
+        <h3>格式保留 + PDF遮罩</h3>
+        <p>.docx 脱敏保留全部字体、加粗、颜色、表格格式，无需重新排版。PDF 文件生成黑色遮罩覆盖敏感信息，原文排版完整保留。双栏并排预览原文和脱敏结果，差异一目了然。</p>
       </div>
       <div class="feature-card reveal reveal-delay-6">
         <div class="feature-icon">📋</div>
@@ -934,32 +934,32 @@ body::after {
   </section>
 
   <!-- ═══════════════════════════════════════════════════════════
-     如何使用（V4.0 三步审查工作流）
+     如何使用（V5.1 三步审查工作流）
      ═══════════════════════════════════════════════════════════ -->
   <section class="section" id="howto">
     <div class="reveal" style="text-align:center">
       <span class="section-label">使用指南</span>
       <h2 class="section-title">三步审查工作流</h2>
-      <p class="section-desc" style="margin:0 auto">V4.0 全新设计：先审查、后脱敏。在脱敏前就能看到所有将被处理的敏感信息。</p>
+      <p class="section-desc" style="margin:0 auto">V5.1：先审查、后脱敏。预审与实际脱敏使用统一ONNX NER引擎，支持自定义实体即时反馈和天干假名命名。</p>
     </div>
 
     <div class="steps-row">
       <div class="step reveal reveal-delay-1">
         <div class="step-num">01</div>
         <h3>上传文件</h3>
-        <p>将 .txt 或 .docx 文件拖入窗口，或点击按钮选择文件。引擎自动识别文件格式并提取全文内容。</p>
+        <p>将 .txt / .docx / .pdf 文件拖入窗口，或点击按钮选择文件。引擎自动识别文件格式并提取全文内容，支持法律合同、起诉状、证据材料等。</p>
         <div class="step-screen"><img src="screenshot_upload.png" alt="上传文件" loading="lazy"></div>
       </div>
       <div class="step reveal reveal-delay-2">
         <div class="step-num">02</div>
         <h3>预扫描审查</h3>
-        <p>引擎自动扫描全文，列出所有检测到的敏感实体。您可以添加漏检项、标记排除项、增删自定义规则，确认无误后再进入脱敏。</p>
+        <p>统一 ONNX BERT-NER 引擎扫描全文，列出所有检测到的敏感实体（人名、公司、地址、机构、PII）。你可以添加漏检项、排除特定项、增删自定义人名，所有操作即时反馈到面板。</p>
         <div class="step-screen"><img src="screenshot_rules.png" alt="预扫描审查" loading="lazy"></div>
       </div>
       <div class="step reveal reveal-delay-3">
         <div class="step-num">03</div>
-        <h3>确认脱敏</h3>
-        <p>一键执行脱敏，双栏并排对比原文和脱敏结果。确认无误后保存脱敏文件和可回溯映射表，.docx 格式完整保留。</p>
+        <h3>确认脱敏 + 保存</h3>
+        <p>一键执行脱敏，天干假名法替代人名（甲某/乙某/丙某），双栏并排对比。保存脱敏文件（保留 .docx 格式 / PDF 遮罩）和可回溯映射表。</p>
         <div class="step-screen"><img src="screenshot_result.png" alt="确认脱敏" loading="lazy"></div>
       </div>
     </div>
@@ -998,7 +998,7 @@ body::after {
         <div class="layer-body">
           <h3>正则规则引擎</h3>
           <span class="layer-tag">可配置 · 高精度</span>
-          <p>7 种简单规则通过 JSON 配置文件驱动，无需改代码即可增删调整。支持「前N位保留 + 中间打码 + 后M位保留」的灵活脱敏格式。每条规则独立启用/禁用，用户可按需自由组合。</p>
+          <p>8 种简单规则通过 JSON 配置文件驱动，无需改代码即可增删调整。支持「前N位保留 + 中间打码 + 后M位保留」的灵活脱敏格式。每条规则独立启用/禁用，用户可按需自由组合。V5.1 包含：案件号、车牌号、微信号三项新增规则。</p>
           <div class="layer-detail">
             <span>身份证号 · 前6+****+后4</span>
             <span>手机号 · 前3+****+后4</span>
@@ -1014,16 +1014,16 @@ body::after {
       <div class="layer-card reveal reveal-delay-3">
         <div class="layer-num">3</div>
         <div class="layer-body">
-          <h3>上下文感知规则 + AI 混合识别</h3>
-          <span class="layer-tag">核心引擎 · BERT-NER + 规则双通道</span>
-          <p>5 条复杂规则由 Python 函数实现，具备上下文理解能力。其中人名识别采用<strong>双通道混合架构</strong>：ONNX BERT-NER 深度学习模型（精准、零误报）与百家姓滑窗 + 职位锚定规则引擎（覆盖、高召回）并行扫描，经三阶层策略合并去重。公司名、机构名、地址和银行账号也均有专用上下文规则。</p>
+          <h3>上下文感知规则 + ONNX BERT-NER</h3>
+          <span class="layer-tag">核心引擎 · V5.1 分块推理</span>
+          <p>人名识别采用<strong>ONNX BERT-NER 深度学习模型</strong>。V5.1 新增 100-token 滑动窗口分块推理（20 重叠），彻底解决 BERT 在长文本上的注意力退化——远处数字/英文不再稀释放在近处的人名信号。公司名、机构名、地址和银行账号均有专用上下文规则，共 15 种脱敏类型覆盖法律文书全场景。</p>
           <div class="layer-detail">
-            <span>人名 · ONNX + 规则双通道</span>
-            <span>324 假阳性黑名单</span>
+            <span>人名 · BERT-NER 分块推理</span>
+            <span>100-token 窗口 + 20 重叠</span>
+            <span>332 假阳性黑名单</span>
             <span>公司名 · 全称+简称关联</span>
             <span>机构名 · 银行/政府分类</span>
             <span>地址 · 省市保留+细节打码</span>
-            <span>银行账号 · 多格式兼容</span>
           </div>
         </div>
       </div>
@@ -1032,16 +1032,16 @@ body::after {
       <div class="layer-card reveal reveal-delay-4">
         <div class="layer-num">4</div>
         <div class="layer-body">
-          <h3>精确格式回写</h3>
-          <span class="layer-tag">docx · run 级别精度</span>
-          <p>对于 .docx 文件，引擎使用 difflib.SequenceMatcher 精确追踪原文与脱敏文本之间的每一个变更区间。间隔 ≤4 字符的碎片变更自动合并为单一区间，然后逐 run 回写到 Word 文档的 XML 结构中，完整保留字体、颜色、加粗、斜体、字号等全部格式。同时支持全文预扫 + 逐段落独立脱敏，保证跨段落公司编号和人名代号的一致性。</p>
+          <h3>精确格式回写 + PDF 遮罩</h3>
+          <span class="layer-tag">docx · PDF · run 级别精度</span>
+          <p>对于 .docx 文件，使用 difflib.SequenceMatcher 精确追踪变更区间，间距 ≤4 字符的碎片自动合并，逐 run 回写到 Word XML 结构，完整保留全部格式。对于 PDF 文件，生成黑色遮罩覆盖敏感信息位置，原文排版完全不变。</p>
           <div class="layer-detail">
             <span>difflib 精确区间追踪</span>
             <span>碎片合并（≤4字符）</span>
             <span>run 级别 XML 回写</span>
-            <span>全文预扫 + 逐段脱敏</span>
-            <span>跨段落代号一致</span>
+            <span>PDF 黑色遮罩覆盖</span>
             <span>表格 + 段落全覆盖</span>
+            <span>跨段落代号一致</span>
           </div>
         </div>
       </div>
@@ -1084,12 +1084,12 @@ body::after {
      ═══════════════════════════════════════════════════════════ -->
   <section class="section cta-section" id="download">
     <div class="cta-glass reveal">
-      <h2>开始使用 life法 V4.0</h2>
+      <h2>开始使用 life法 V5.1</h2>
       <p class="cta-sub">免费、安全、简单。下载即用，无需安装。</p>
 
       <!-- ★ 下载链接 — 夸克网盘 / GitHub Releases 备用 ★ -->
       <button class="hero-cta" id="mainDownloadBtn">
-        下载 Windows 版 v4.0.0
+        下载 Windows 版 v5.1.0
         <span class="arrow">↓</span>
       </button>
 
@@ -1108,7 +1108,7 @@ body::after {
    ═══════════════════════════════════════════════════════════════ -->
 <footer class="footer">
   <p>
-    <strong>life法 V4.0</strong> · 敏感信息脱敏工具<br>
+    <strong>life法 V5.1</strong> · 敏感信息脱敏工具<br>
     完全本地运行 · 数据安全无忧
   </p>
 </footer>
@@ -1167,8 +1167,8 @@ body::after {
   }
 
   // ── 下载按钮 ──
-  const DOWNLOAD_URL = "https://pan.quark.cn/s/049504d44cc2";
-  const DOWNLOAD_FALLBACK = "https://github.com/hanbills52/hanbill-/releases/download/v4.0.0/life._V4.0.zip";
+  const DOWNLOAD_URL = "https://pan.quark.cn/s/1c47e8fe4d17";
+  const DOWNLOAD_FALLBACK = "https://github.com/hanbills52/hanbill-/releases/download/v5.1.0/life._V5.1.zip";
 
   function handleDownload(e) {
     e.preventDefault();
