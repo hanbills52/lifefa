@@ -6,11 +6,11 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>life法 V5.1 — 完全本地运行的敏感信息脱敏工具</title>
-<meta name="description" content="life法 V5.1：分块推理ONNX NER + 预审统一引擎 + 天干假名 + 15种脱敏规则。PDF遮罩，保留docx/PDF格式，可回溯映射表，完全本地运行，永久免费。">
+<title>life法 V5.3 — 完全本地运行的敏感信息脱敏工具</title>
+<meta name="description" content="life法 V5.3：通用自定义实体 · 回溯还原闭环 · 动态光晕UI · 分块推理ONNX NER · 天干假名 · 15种脱敏规则。PDF遮罩，保留docx/PDF格式，完全本地运行，永久免费。">
 <style>
 /* ═══════════════════════════════════════════════════════════════
-   life法 下载页  v2 — 深色磨砂 · 高级排版 · 零依赖
+   life法 下载页  v3 — 深色磨砂 · 高级交互 · 零依赖
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── 设计令牌 ── */
@@ -26,6 +26,11 @@
   --accent-light: #8ec9db;
   --accent-soft: rgba(117,178,200,0.10);
   --accent-glow: rgba(117,178,200,0.15);
+  --purple:    #a78bfa;
+  --purple-soft: rgba(139,92,246,0.10);
+  --gold:      #fbbf24;
+  --gold-soft: rgba(251,191,36,0.08);
+  --rose:      #f472b6;
   --accent-gradient: linear-gradient(135deg, #75b2c8 0%, #8ec9db 60%, #a0d4e4 100%);
   --text:      #e4e7ec;
   --text-dim:  #9399a5;
@@ -38,6 +43,8 @@
   --ease-out:  cubic-bezier(0.19, 1, 0.22, 1);
   --max-width: 1120px;
   --section-gap: 120px;
+  --spotlight-x: 50%;
+  --spotlight-y: 50%;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -59,23 +66,48 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   背景系统 — 4层径向光晕 + 网格 + 噪点纹理
+   滚动进度条
+   ═══════════════════════════════════════════════════════════════ */
+.scroll-progress {
+  position: fixed; top: 0; left: 0; height: 2px; z-index: 200;
+  background: linear-gradient(90deg, var(--accent), var(--purple), var(--gold));
+  width: 0%;
+  transition: width 0.1s linear;
+  border-radius: 0 1px 1px 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   鼠标聚光灯
+   ═══════════════════════════════════════════════════════════════ */
+.spotlight {
+  position: fixed; pointer-events: none; z-index: 0;
+  width: 700px; height: 700px;
+  background: radial-gradient(circle at center,
+    rgba(117,178,200,0.04) 0%,
+    rgba(139,92,246,0.02) 30%,
+    transparent 60%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.4s var(--ease);
+  will-change: left, top;
+}
+.spotlight.active { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════════════════
+   背景系统 — 5层径向光晕 + 网格 + 噪点纹理 + 浮动光斑
    ═══════════════════════════════════════════════════════════════ */
 body::before {
   content: '';
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background:
-    /* 顶部中心 — 主光晕 */
-    radial-gradient(ellipse 80% 55% at 50% 0%,  rgba(117,178,200,0.06) 0%, transparent 60%),
-    /* 左上 — 辅助暖光 */
-    radial-gradient(ellipse 50% 40% at 15% 20%, rgba(117,178,200,0.04) 0%, transparent 55%),
-    /* 右下 — 辅助冷光 */
-    radial-gradient(ellipse 45% 35% at 85% 75%, rgba(100,160,185,0.03) 0%, transparent 55%),
-    /* 中心偏下 — 微弱补光 */
-    radial-gradient(ellipse 60% 45% at 50% 60%, rgba(130,190,210,0.02) 0%, transparent 50%);
+    radial-gradient(ellipse 80% 55% at 50% 0%,  rgba(117,178,200,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 15% 20%, rgba(117,178,200,0.05) 0%, transparent 55%),
+    radial-gradient(ellipse 45% 35% at 85% 75%, rgba(100,160,185,0.04) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 45% at 50% 60%, rgba(130,190,210,0.03) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 30% at 75% 35%, rgba(139,92,246,0.03) 0%, transparent 50%);
 }
 
-/* 网格线 */
 body::after {
   content: '';
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
@@ -85,7 +117,6 @@ body::after {
     repeating-linear-gradient(90deg, rgba(117,178,200,0.5) 0, rgba(117,178,200,0.5) 1px, transparent 1px, transparent 160px);
 }
 
-/* 噪点纹理叠加 */
 .grain {
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
   opacity: 0.015;
@@ -97,7 +128,6 @@ body::after {
    ═══════════════════════════════════════════════════════════════ */
 .bg-art { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
 
-/* Hero 区大环 */
 .bg-art .ring-hero {
   position: absolute;
   right: -200px; top: -120px;
@@ -117,7 +147,6 @@ body::after {
   animation: slow-spin 70s linear infinite reverse;
 }
 
-/* 左下斜线组 */
 .bg-art .diagonals {
   position: absolute;
   left: 3%; bottom: 28%;
@@ -133,7 +162,6 @@ body::after {
     linear-gradient(135deg, transparent calc(42% + 52px), rgba(117,178,200,0.03) calc(42% + 52px), rgba(117,178,200,0.03) calc(43% + 52px), transparent calc(43% + 52px));
 }
 
-/* 右下圆点群 */
 .bg-art .dots {
   position: absolute;
   right: 5%; bottom: 20%;
@@ -154,7 +182,6 @@ body::after {
 .bg-art .dots .dr:nth-child(3) { gap: 16px; opacity: 0.05; }
 .bg-art .dots .dr:nth-child(3) span { width: 2px; height: 2px; }
 
-/* 中右十字准线 */
 .bg-art .crosshair {
   position: absolute;
   right: 20%; top: 45%;
@@ -176,7 +203,7 @@ body::after {
   background: var(--accent);
 }
 
-/* 浮动光斑 */
+/* 浮动光斑 — 5 个，含紫色/金色 */
 .bg-art .orb {
   position: absolute; border-radius: 50%;
   background: radial-gradient(circle, rgba(117,178,200,0.08) 0%, transparent 70%);
@@ -186,6 +213,16 @@ body::after {
 .bg-art .orb-1 { width: 300px; height: 300px; left: 10%; top: 35%; animation-delay: 0s; }
 .bg-art .orb-2 { width: 200px; height: 200px; right: 15%; top: 55%; animation-delay: -3s; }
 .bg-art .orb-3 { width: 250px; height: 250px; left: 45%; top: 70%; animation-delay: -5s; }
+.bg-art .orb-4 {
+  width: 180px; height: 180px; left: 60%; top: 25%;
+  background: radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%);
+  animation-delay: -2s; animation-duration: 10s;
+}
+.bg-art .orb-5 {
+  width: 160px; height: 160px; right: 25%; top: 40%;
+  background: radial-gradient(circle, rgba(251,191,36,0.04) 0%, transparent 70%);
+  animation-delay: -6s; animation-duration: 9s;
+}
 
 @keyframes slow-spin {
   from { transform: scaleX(0.44) rotate(15deg); }
@@ -194,6 +231,12 @@ body::after {
 @keyframes float {
   0%, 100% { transform: translateY(0) scale(1); }
   50%      { transform: translateY(-24px) scale(1.05); }
+}
+
+/* Hero 标题微光扫过动画 */
+@keyframes shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -262,7 +305,6 @@ body::after {
   color: var(--accent-light) !important;
 }
 
-/* 移动端汉堡菜单 */
 .nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 24px; cursor: pointer; }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -319,12 +361,14 @@ body::after {
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.05;
-  background: linear-gradient(135deg, #e4e7ec 0%, #b0c4d0 35%, #75b2c8 65%, #8ec9db 100%);
+  background: linear-gradient(135deg, #e4e7ec 0%, #b0c4d0 30%, #75b2c8 55%, #a78bfa 75%, #8ec9db 100%);
+  background-size: 300% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-wrap: balance;
   margin-bottom: 20px;
+  animation: shimmer 6s ease-in-out infinite;
 }
 .hero .subtitle {
   font-size: clamp(17px, 2.2vw, 21px);
@@ -338,6 +382,14 @@ body::after {
   color: var(--text-faint);
   margin-bottom: 40px;
   text-wrap: balance;
+}
+.hero .tagline em {
+  font-style: normal;
+  color: var(--purple);
+  background: var(--purple-soft);
+  padding: 1px 8px;
+  border-radius: 4px;
+  margin: 0 3px;
 }
 
 /* ── 主 CTA ── */
@@ -393,14 +445,91 @@ body::after {
 .hero-meta .dot-sep {
   width: 3px; height: 3px; border-radius: 50%; background: var(--text-faint);
 }
+.hero-meta .badge-new {
+  display: inline-block;
+  font-size: 10px; font-weight: 700;
+  color: #fbbf24;
+  background: rgba(251,191,36,0.12);
+  padding: 1px 7px;
+  border-radius: 100px;
+  letter-spacing: 0.3px;
+}
 
 /* ═══════════════════════════════════════════════════════════════
-   功能卡片 2×3 网格
+   版本亮点标签行
+   ═══════════════════════════════════════════════════════════════ */
+.version-highlights {
+  display: flex; justify-content: center; gap: 10px;
+  margin-top: 24px; flex-wrap: wrap;
+}
+.version-highlights .vh-chip {
+  font-size: 12px; font-weight: 500;
+  color: var(--text-dim);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 5px 14px;
+  border-radius: 100px;
+  transition: all 0.25s var(--ease);
+}
+.version-highlights .vh-chip:hover {
+  color: var(--text);
+  border-color: rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.05);
+}
+.version-highlights .vh-chip.new {
+  color: var(--gold);
+  border-color: rgba(251,191,36,0.2);
+  background: rgba(251,191,36,0.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   统计数据行
+   ═══════════════════════════════════════════════════════════════ */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 48px;
+}
+.stat-card {
+  text-align: center;
+  padding: 28px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  backdrop-filter: blur(40px) saturate(140%);
+  -webkit-backdrop-filter: blur(40px) saturate(140%);
+  border: 1px solid var(--border);
+  transition: all 0.35s var(--ease);
+}
+.stat-card:hover {
+  border-color: var(--border-visible);
+  background: var(--surface-raised);
+  transform: translateY(-2px);
+}
+.stat-num {
+  font-size: clamp(32px, 4vw, 44px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 6px;
+  background: linear-gradient(135deg, var(--accent-light), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.stat-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   功能卡片 4×2 网格
    ═══════════════════════════════════════════════════════════════ */
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
   margin-top: 36px;
 }
 .feature-card {
@@ -409,15 +538,17 @@ body::after {
   -webkit-backdrop-filter: blur(40px) saturate(140%);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 36px 30px;
+  padding: 30px 22px;
   transition: transform 0.4s var(--ease-out),
               border-color 0.35s var(--ease),
               box-shadow 0.35s var(--ease),
               background 0.35s var(--ease);
   position: relative;
   overflow: hidden;
+  /* 3D 倾斜 */
+  transform-style: preserve-3d;
+  perspective: 800px;
 }
-/* 卡片顶部微光 */
 .feature-card::before {
   content: '';
   position: absolute; top: 0; left: 20px; right: 20px;
@@ -434,14 +565,36 @@ body::after {
 }
 .feature-card:hover::before { opacity: 1; }
 
+/* 回溯还原卡片金色主题 */
+.feature-card.card-restore {
+  border-color: rgba(251,191,36,0.08);
+}
+.feature-card.card-restore::before {
+  background: linear-gradient(90deg, transparent, rgba(251,191,36,0.2), transparent);
+}
+.feature-card.card-restore:hover {
+  border-color: rgba(251,191,36,0.18);
+}
+
+/* 通用自定义卡片紫色主题 */
+.feature-card.card-custom {
+  border-color: rgba(139,92,246,0.08);
+}
+.feature-card.card-custom::before {
+  background: linear-gradient(90deg, transparent, rgba(139,92,246,0.2), transparent);
+}
+.feature-card.card-custom:hover {
+  border-color: rgba(139,92,246,0.18);
+}
+
 .feature-icon {
   display: flex; align-items: center; justify-content: center;
-  width: 48px; height: 48px;
-  border-radius: 14px;
+  width: 44px; height: 44px;
+  border-radius: 12px;
   background: var(--accent-soft);
   border: 1px solid rgba(117,178,200,0.1);
-  font-size: 24px;
-  margin-bottom: 20px;
+  font-size: 22px;
+  margin-bottom: 16px;
   transition: all 0.35s var(--ease);
 }
 .feature-card:hover .feature-icon {
@@ -449,14 +602,43 @@ body::after {
   border-color: rgba(117,178,200,0.2);
   box-shadow: 0 0 16px rgba(117,178,200,0.12);
 }
+.feature-card.card-restore .feature-icon {
+  background: rgba(251,191,36,0.08);
+  border-color: rgba(251,191,36,0.12);
+}
+.feature-card.card-restore:hover .feature-icon {
+  background: rgba(251,191,36,0.14);
+  border-color: rgba(251,191,36,0.22);
+  box-shadow: 0 0 16px rgba(251,191,36,0.14);
+}
+.feature-card.card-custom .feature-icon {
+  background: rgba(139,92,246,0.08);
+  border-color: rgba(139,92,246,0.12);
+}
+.feature-card.card-custom:hover .feature-icon {
+  background: rgba(139,92,246,0.14);
+  border-color: rgba(139,92,246,0.22);
+  box-shadow: 0 0 16px rgba(139,92,246,0.14);
+}
+
 .feature-card h3 {
-  font-size: 18px; font-weight: 600;
-  margin-bottom: 8px;
+  font-size: 16px; font-weight: 600;
+  margin-bottom: 6px;
   letter-spacing: -0.01em;
 }
+.feature-card .badge {
+  display: inline-block;
+  font-size: 9.5px; font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 100px;
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+.badge-new-feature { color: var(--gold); background: rgba(251,191,36,0.12); }
+.badge-v53 { color: var(--purple); background: rgba(139,92,246,0.12); }
 .feature-card p {
-  font-size: 14.5px; color: var(--text-dim);
-  line-height: 1.65;
+  font-size: 13.5px; color: var(--text-dim);
+  line-height: 1.6;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -469,7 +651,6 @@ body::after {
   margin-top: 36px;
   position: relative;
 }
-/* 水平连接线 */
 .steps-row::before {
   content: '';
   position: absolute;
@@ -510,7 +691,6 @@ body::after {
   line-height: 1.6;
   margin-bottom: 18px;
 }
-/* 截图 */
 .step-screen {
   width: 100%;
   aspect-ratio: 16/10;
@@ -531,7 +711,92 @@ body::after {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   脱敏思路 — 四层递进卡片
+   回溯还原亮点横幅
+   ═══════════════════════════════════════════════════════════════ */
+.restore-banner {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 36px;
+  align-items: center;
+  padding: 44px 40px;
+  margin-top: 36px;
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  backdrop-filter: blur(40px) saturate(140%);
+  -webkit-backdrop-filter: blur(40px) saturate(140%);
+  border: 1px solid rgba(251,191,36,0.1);
+  transition: all 0.4s var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+.restore-banner::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 80% 50%, rgba(251,191,36,0.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+.restore-banner:hover {
+  border-color: rgba(251,191,36,0.2);
+  background: var(--surface-raised);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+}
+.restore-icon-wrap {
+  display: flex; align-items: center; justify-content: center;
+  width: 80px; height: 80px;
+  border-radius: 20px;
+  background: rgba(251,191,36,0.08);
+  border: 1px solid rgba(251,191,36,0.15);
+  font-size: 36px;
+  flex-shrink: 0;
+  position: relative; z-index: 1;
+  transition: all 0.35s var(--ease);
+}
+.restore-banner:hover .restore-icon-wrap {
+  background: rgba(251,191,36,0.14);
+  border-color: rgba(251,191,36,0.25);
+  box-shadow: 0 0 28px rgba(251,191,36,0.12);
+}
+.restore-body { position: relative; z-index: 1; }
+.restore-body h3 {
+  font-size: 22px; font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+.restore-body h3 .badge {
+  display: inline-block;
+  font-size: 10px; font-weight: 700;
+  color: var(--gold);
+  background: rgba(251,191,36,0.12);
+  padding: 2px 8px;
+  border-radius: 100px;
+  margin-left: 8px;
+  vertical-align: middle;
+  letter-spacing: 0.3px;
+}
+.restore-body .restore-subtitle {
+  font-size: 15px; color: var(--text-dim);
+  margin-bottom: 14px;
+}
+.restore-flow {
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap;
+}
+.restore-flow .flow-step {
+  font-size: 13px; font-weight: 500;
+  color: var(--text);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 6px 14px;
+  border-radius: 8px;
+}
+.restore-flow .flow-arrow {
+  color: var(--gold);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   脱敏思路 — 五层递进卡片
    ═══════════════════════════════════════════════════════════════ */
 .methodology-layers {
   display: flex;
@@ -569,6 +834,24 @@ body::after {
   box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
 .layer-card:hover::after { opacity: 1; }
+
+/* 第五层金色主题 */
+.layer-card.layer-restore {
+  border-color: rgba(251,191,36,0.06);
+}
+.layer-card.layer-restore:hover {
+  border-color: rgba(251,191,36,0.15);
+}
+.layer-card.layer-restore .layer-num {
+  background: rgba(251,191,36,0.08);
+  border-color: rgba(251,191,36,0.12);
+  color: var(--gold);
+}
+.layer-card.layer-restore:hover .layer-num {
+  border-color: rgba(251,191,36,0.28);
+  box-shadow: 0 0 20px rgba(251,191,36,0.15);
+}
+
 .layer-num {
   width: 52px; height: 52px;
   display: flex; align-items: center; justify-content: center;
@@ -679,6 +962,12 @@ body::after {
   -webkit-backdrop-filter: blur(40px) saturate(140%);
   border: 1px solid var(--border);
   box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+  transition: transform 0.4s var(--ease-out), border-color 0.35s var(--ease), box-shadow 0.35s var(--ease);
+}
+.cta-glass:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-visible);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
 }
 .cta-glass h2 {
   font-size: clamp(24px, 3.5vw, 34px);
@@ -724,13 +1013,47 @@ body::after {
   opacity: 1;
   transform: translateY(0);
 }
-/* 卡片错开延迟 */
 .reveal-delay-1 { transition-delay: 0.05s; }
 .reveal-delay-2 { transition-delay: 0.10s; }
 .reveal-delay-3 { transition-delay: 0.15s; }
 .reveal-delay-4 { transition-delay: 0.20s; }
 .reveal-delay-5 { transition-delay: 0.25s; }
 .reveal-delay-6 { transition-delay: 0.30s; }
+.reveal-delay-7 { transition-delay: 0.35s; }
+.reveal-delay-8 { transition-delay: 0.40s; }
+
+/* ═══════════════════════════════════════════════════════════════
+   回到顶部按钮
+   ═══════════════════════════════════════════════════════════════ */
+.back-to-top {
+  position: fixed; bottom: 32px; right: 32px; z-index: 150;
+  width: 44px; height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(22,24,31,0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--text-dim);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition: all 0.35s var(--ease);
+}
+.back-to-top.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.back-to-top:hover {
+  color: var(--text);
+  border-color: rgba(255,255,255,0.2);
+  background: rgba(28,30,38,0.85);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
 
 /* ═══════════════════════════════════════════════════════════════
    响应式 — 平板
@@ -738,6 +1061,9 @@ body::after {
 @media (max-width: 900px) {
   :root { --section-gap: 80px; }
   .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .stats-row {
     grid-template-columns: repeat(2, 1fr);
   }
   .steps-row {
@@ -750,8 +1076,17 @@ body::after {
     max-width: 400px;
     margin-left: auto; margin-right: auto;
   }
+  .restore-banner {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 20px;
+  }
+  .restore-icon-wrap { margin: 0 auto; }
+  .restore-flow { justify-content: center; }
   .nav-links { gap: 20px; }
   .cta-glass { padding: 40px 32px; }
+  .version-highlights { gap: 6px; }
+  .version-highlights .vh-chip { font-size: 11px; padding: 4px 10px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -779,9 +1114,15 @@ body::after {
 
   .features-grid {
     grid-template-columns: 1fr;
-    gap: 14px;
+    gap: 12px;
   }
-  .feature-card { padding: 28px 24px; }
+  .feature-card { padding: 24px 20px; }
+
+  .stats-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .stat-card { padding: 20px 12px; }
 
   .steps-row {
     grid-template-columns: 1fr;
@@ -799,11 +1140,21 @@ body::after {
   }
   .layer-card::after { display: none; }
 
+  .restore-banner {
+    grid-template-columns: 1fr;
+    padding: 28px 24px;
+    gap: 16px;
+  }
+  .restore-flow { gap: 8px; }
+  .restore-flow .flow-arrow { font-size: 14px; }
+
   .cta-glass {
     padding: 36px 24px;
     border-radius: var(--radius-lg);
   }
   .hero-cta { padding: 16px 36px; font-size: 16px; }
+
+  .back-to-top { bottom: 20px; right: 20px; width: 40px; height: 40px; border-radius: 12px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -817,10 +1168,17 @@ body::after {
   }
   html { scroll-behavior: auto; }
   .reveal { opacity: 1; transform: none; }
+  .spotlight { display: none; }
 }
 </style>
 </head>
 <body>
+
+<!-- 滚动进度条 -->
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+<!-- 鼠标聚光灯 -->
+<div class="spotlight" id="spotlight" aria-hidden="true"></div>
 
 <!-- 背景装饰 -->
 <div class="grain" aria-hidden="true"></div>
@@ -837,6 +1195,8 @@ body::after {
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
   <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+  <div class="orb orb-5"></div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════
@@ -851,6 +1211,7 @@ body::after {
     <button class="nav-toggle" id="navToggle" aria-label="菜单">&#9776;</button>
     <ul class="nav-links" id="navLinks">
       <li><a href="#features">功能特点</a></li>
+      <li><a href="#restore">回溯还原</a></li>
       <li><a href="#howto">如何使用</a></li>
       <li><a href="#methodology">脱敏思路</a></li>
       <li><a href="#security">安全保障</a></li>
@@ -866,23 +1227,31 @@ body::after {
      ═══════════════════════════════════════════════════════════ -->
   <section class="hero section">
     <img class="hero-icon" src="logo_256.png" alt="life法" width="80" height="80">
-    <h1>life法 V5.1</h1>
+    <h1>life法 V5.3</h1>
     <p class="subtitle">完全本地运行的敏感信息脱敏工具</p>
-    <p class="tagline">分块推理 ONNX NER · 天干假名法 · 预审统一引擎 · PDF遮罩 · 15类规则 · 永久免费</p>
+    <p class="tagline">
+      分块推理 ONNX NER · 天干假名法 · <em>回溯还原闭环</em> · <em>通用自定义实体</em> · PDF遮罩 · 15类规则 · 永久免费
+    </p>
 
-    <!-- ★ 下载链接 — 部署时替换为 GitHub Releases 直链 ★ -->
     <button class="hero-cta" id="heroDownloadBtn">
       免费下载 Windows 版
       <span class="arrow">↓</span>
     </button>
     <div class="hero-meta">
-      <span>v5.1.0</span>
+      <span>v5.3.0</span>
       <span class="dot-sep"></span>
-      <span>约 129 MB</span>
+      <span>约 127 MB</span>
       <span class="dot-sep"></span>
       <span>Windows 10 / 11</span>
       <span class="dot-sep"></span>
       <span>64 位</span>
+    </div>
+    <div class="version-highlights">
+      <span class="vh-chip new">🆕 V5.3 通用自定义实体</span>
+      <span class="vh-chip new">🆕 V5.2 回溯还原闭环</span>
+      <span class="vh-chip">动态光晕 UI</span>
+      <span class="vh-chip">卡片景深系统</span>
+      <span class="vh-chip">微交互反馈</span>
     </div>
     <div style="margin-top:8px;font-size:12px;color:var(--text-faint);">
       备用：<a href="#" id="fallbackLink" style="color:var(--accent);text-decoration:none;">GitHub 直链下载</a>
@@ -890,89 +1259,186 @@ body::after {
   </section>
 
   <!-- ═══════════════════════════════════════════════════════════
-     功能亮点
+     数据统计行
+     ═══════════════════════════════════════════════════════════ -->
+  <div class="stats-row reveal">
+    <div class="stat-card">
+      <div class="stat-num" data-target="15">0</div>
+      <div class="stat-label">脱敏规则类型</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" data-target="3">0</div>
+      <div class="stat-label">支持文件格式</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" data-target="80">0</div>
+      <div class="stat-label">测试用例覆盖</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" data-target="100" data-suffix="%">0</div>
+      <div class="stat-label">本地处理，数据不出电脑</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     功能亮点 — 4×2 网格
      ═══════════════════════════════════════════════════════════ -->
   <section class="section" id="features">
     <div class="reveal">
       <span class="section-label">功能特点</span>
       <h2 class="section-title">为什么选择 life法？</h2>
-      <p class="section-desc">专为法律从业者和注重隐私的用户设计。V5.1 采用分块推理引擎解决 BERT 长文本注意力退化，预审与实际脱敏使用统一 ONNX BERT-NER 模型，自定义实体实时可见。</p>
+      <p class="section-desc">专为法律从业者和注重隐私的用户设计。V5.3 新增通用自定义实体和动态光晕 UI，V5.2 新增回溯还原闭环——脱敏后随时还原，形成完整数据安全链路。</p>
     </div>
 
     <div class="features-grid">
+      <!-- 1. 完全本地 -->
       <div class="feature-card reveal reveal-delay-1">
         <div class="feature-icon">🔒</div>
         <h3>完全本地运行</h3>
-        <p>所有脱敏处理在您的电脑上完成，文件内容绝不上传至任何服务器。断网也能正常使用，您完全掌控自己的数据。</p>
+        <p>所有脱敏处理在您的电脑上完成，文件内容绝不上传至任何服务器。断网也能正常使用。</p>
       </div>
+
+      <!-- 2. ONNX NER 分块推理 -->
       <div class="feature-card reveal reveal-delay-2">
         <div class="feature-icon">🧠</div>
-        <h3>ONNX BERT-NER 分块推理</h3>
-        <p>bert-base-chinese-ner 深度学习模型驱动。V5.1 新增 100-token 分块推理引擎，彻底解决 BERT 长文本注意力退化——即使人名在 1300 字法律文书的末尾也能精准识别。INT8 量化体积压缩 75%，精度基本无损。</p>
+        <h3>BERT-NER 分块推理</h3>
+        <p>bert-base-chinese-ner 深度学习模型，100-token 滑动窗口分块推理。INT8 量化压缩 75%，精度基本无损。</p>
       </div>
-      <div class="feature-card reveal reveal-delay-3">
+
+      <!-- 3. 回溯还原 ★ 金色 -->
+      <div class="feature-card card-restore reveal reveal-delay-3">
+        <div class="feature-icon">🔄</div>
+        <span class="badge badge-new-feature">V5.2 新增</span>
+        <h3>回溯还原闭环</h3>
+        <p>上传脱敏文件 + JSON 映射表，一键还原为原始文本。脱敏→还原形成完整闭环，安全可逆，支持 .txt 和 .docx。</p>
+      </div>
+
+      <!-- 4. 通用自定义 ★ 紫色 -->
+      <div class="feature-card card-custom reveal reveal-delay-4">
+        <div class="feature-icon">⚡</div>
+        <span class="badge badge-v53">V5.3 新增</span>
+        <h3>通用自定义实体</h3>
+        <p>除了人名、公司名，新增第三种自由模式——完全自定义查找文本和替换文本，灵活应对各类脱敏场景。</p>
+      </div>
+
+      <!-- 5. 即时反馈 -->
+      <div class="feature-card reveal reveal-delay-5">
         <div class="feature-icon">🏷</div>
         <h3>自定义脱敏 + 即时反馈</h3>
-        <p>添加自定义人名或公司名后立即在审查面板可见（金色边框 ✏️ 标记），自动走天干假名命名体系（甲某/乙某/丙某）。点击即可删除。支持一键排除，自定义规则自动持久化。</p>
+        <p>添加自定义实体后立即在审查面板可见（金色边框标记），自动走天干假名体系。点击删除，支持一键排除，规则自动持久化。</p>
       </div>
-      <div class="feature-card reveal reveal-delay-4">
+
+      <!-- 6. 统一预审 -->
+      <div class="feature-card reveal reveal-delay-6">
         <div class="feature-icon">🔍</div>
         <h3>统一预审引擎</h3>
-        <p>V5.1 预审与实际脱敏使用同一 ONNX BERT-NER 引擎，你在审查界面看到的人名列表与最终脱敏结果完全一致。不再有两套引擎"各说各话"的割裂体验。</p>
+        <p>预审与实际脱敏使用同一 ONNX BERT-NER 引擎，审查界面看到的人名列表与最终脱敏结果完全一致。</p>
       </div>
-      <div class="feature-card reveal reveal-delay-5">
+
+      <!-- 7. 格式保留 -->
+      <div class="feature-card reveal reveal-delay-7">
         <div class="feature-icon">📝</div>
         <h3>格式保留 + PDF遮罩</h3>
-        <p>.docx 脱敏保留全部字体、加粗、颜色、表格格式，无需重新排版。PDF 文件生成黑色遮罩覆盖敏感信息，原文排版完整保留。双栏并排预览原文和脱敏结果，差异一目了然。</p>
+        <p>.docx 脱敏保留全部字体、加粗、颜色、表格格式。PDF 生成黑色遮罩覆盖敏感信息。双栏并排预览差异一目了然。</p>
       </div>
-      <div class="feature-card reveal reveal-delay-6">
+
+      <!-- 8. 映射表 -->
+      <div class="feature-card reveal reveal-delay-8">
         <div class="feature-icon">📋</div>
         <h3>可回溯映射表</h3>
-        <p>每次脱敏自动生成完整映射对照表，清晰的"原名 → 替身"关系。方便核查替换内容，也可按需手动调整后重新脱敏。同时支持 .txt 和 .docx。</p>
+        <p>每次脱敏自动生成完整 JSON 映射对照表，清晰记录"原名 → 替身"关系。配合回溯还原功能，形成安全可逆闭环。</p>
       </div>
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════════════════
-     如何使用（V5.1 三步审查工作流）
+     回溯还原 — 重点功能详解
+     ═══════════════════════════════════════════════════════════ -->
+  <section class="section" id="restore">
+    <div class="reveal">
+      <span class="section-label">V5.2 核心功能</span>
+      <h2 class="section-title">回溯还原 — 脱敏可逆，安全闭环</h2>
+      <p class="section-desc">法律文书的脱敏不只要求"脱得干净"，更要求"需要时能还原"。life法 V5.2 实现了完整的脱敏→还原链路，让你随时找回原始信息。</p>
+    </div>
+
+    <div class="restore-banner reveal reveal-delay-1">
+      <div class="restore-icon-wrap">🔄</div>
+      <div class="restore-body">
+        <h3>脱敏 ⇄ 还原完整闭环 <span class="badge">NEW</span></h3>
+        <p class="restore-subtitle">上传脱敏后的文件 + 脱敏时保存的 JSON 映射表，一键还原全部敏感信息。支持 .txt 和 .docx 格式。</p>
+        <div class="restore-flow">
+          <span class="flow-step">📄 原始文件</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">🔒 脱敏处理</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">📋 脱敏文件 + 映射表</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">🔄 上传还原</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-step">📄 原始文件</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="features-grid" style="margin-top:24px;grid-template-columns:repeat(3,1fr)">
+      <div class="feature-card reveal reveal-delay-2" style="text-align:center">
+        <div class="feature-icon" style="margin:0 auto 16px">🔄</div>
+        <h3>Tab 一键切换</h3>
+        <p>脱敏/还原双模式，顶部 Tab 栏一键切换，无需重新上传文件。界面流畅自然。</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-3" style="text-align:center">
+        <div class="feature-icon" style="margin:0 auto 16px">📋</div>
+        <h3>JSON 映射表驱动</h3>
+        <p>脱敏时自动生成的 JSON 映射表是还原的唯一密钥。每个映射关系清晰可追溯。</p>
+      </div>
+      <div class="feature-card reveal reveal-delay-4" style="text-align:center">
+        <div class="feature-icon" style="margin:0 auto 16px">✅</div>
+        <h3>格式完整保留</h3>
+        <p>还原后的 .docx 文件保留原始字体、加粗、颜色和表格结构，与脱敏前完全一致。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+     如何使用
      ═══════════════════════════════════════════════════════════ -->
   <section class="section" id="howto">
     <div class="reveal" style="text-align:center">
       <span class="section-label">使用指南</span>
       <h2 class="section-title">三步审查工作流</h2>
-      <p class="section-desc" style="margin:0 auto">V5.1：先审查、后脱敏。预审与实际脱敏使用统一ONNX NER引擎，支持自定义实体即时反馈和天干假名命名。</p>
+      <p class="section-desc" style="margin:0 auto">V5.3：先审查、后脱敏、可还原。预审与实际脱敏使用统一 ONNX NER 引擎，支持自定义实体即时反馈和天干假名命名。</p>
     </div>
 
     <div class="steps-row">
       <div class="step reveal reveal-delay-1">
         <div class="step-num">01</div>
         <h3>上传文件</h3>
-        <p>将 .txt / .docx / .pdf 文件拖入窗口，或点击按钮选择文件。引擎自动识别文件格式并提取全文内容，支持法律合同、起诉状、证据材料等。</p>
+        <p>将 .txt / .docx / .pdf 文件拖入窗口或点击选择。引擎自动识别格式并提取全文内容，支持法律合同、起诉状、证据材料等。</p>
         <div class="step-screen"><img src="screenshot_upload.png" alt="上传文件" loading="lazy"></div>
       </div>
       <div class="step reveal reveal-delay-2">
         <div class="step-num">02</div>
-        <h3>预扫描审查</h3>
-        <p>统一 ONNX BERT-NER 引擎扫描全文，列出所有检测到的敏感实体（人名、公司、地址、机构、PII）。你可以添加漏检项、排除特定项、增删自定义人名，所有操作即时反馈到面板。</p>
+        <h3>预扫描审查 + 脱敏</h3>
+        <p>统一 ONNX BERT-NER 引擎扫描全文，列出检测到的敏感实体。添加自定义实体（人名/公司名/通用），所有操作即时反馈。一键执行脱敏。</p>
         <div class="step-screen"><img src="screenshot_rules.png" alt="预扫描审查" loading="lazy"></div>
       </div>
       <div class="step reveal reveal-delay-3">
         <div class="step-num">03</div>
-        <h3>确认脱敏 + 保存</h3>
-        <p>一键执行脱敏，天干假名法替代人名（甲某/乙某/丙某），双栏并排对比。保存脱敏文件（保留 .docx 格式 / PDF 遮罩）和可回溯映射表。</p>
+        <h3>保存 + 按需还原</h3>
+        <p>保存脱敏文件和 JSON 映射表。需要还原时，切换到还原 Tab，上传脱敏文件 + 映射表，一键还原为原始文本。</p>
         <div class="step-screen"><img src="screenshot_result.png" alt="确认脱敏" loading="lazy"></div>
       </div>
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════════════════
-     脱敏思路 — 四层递进策略
+     脱敏思路 — 五层递进策略
      ═══════════════════════════════════════════════════════════ -->
   <section class="section" id="methodology">
     <div class="reveal">
       <span class="section-label">脱敏思路</span>
-      <h2 class="section-title">分层递进，AI 辅助</h2>
-      <p class="section-desc">life法 采用四层递进式脱敏策略，从精确字符串匹配到 AI 上下文理解，逐层深入，兼顾精度与召回。</p>
+      <h2 class="section-title">五层递进，AI 辅助，可逆闭环</h2>
+      <p class="section-desc">life法 采用五层递进式策略，从精确字符串匹配到 AI 上下文理解再到还原闭环，逐层深入，兼顾精度、召回与安全性。</p>
     </div>
 
     <div class="methodology-layers">
@@ -982,11 +1448,12 @@ body::after {
         <div class="layer-body">
           <h3>精确字符串替换</h3>
           <span class="layer-tag">自定义优先</span>
-          <p>用户手动指定的实体在所有规则引擎启动前先执行精确全字匹配替换。人名统一分配为「人员A / 人员B / 人员C」，公司名统一分配为「公司A / 公司B / 公司C」，保证全文代号一致。</p>
+          <p>用户手动指定的实体在所有规则引擎启动前先执行精确全字匹配替换。人名 → 甲某/乙某/丙某，公司名 → 公司A/公司B/公司C。<strong>V5.3 新增通用自定义</strong>：自由定义查找/替换文本。</p>
           <div class="layer-detail">
             <span>精确全字匹配</span>
             <span>代号预分配</span>
             <span>跨段落一致</span>
+            <span>通用自定义</span>
             <span>持久化保存</span>
           </div>
         </div>
@@ -998,7 +1465,7 @@ body::after {
         <div class="layer-body">
           <h3>正则规则引擎</h3>
           <span class="layer-tag">可配置 · 高精度</span>
-          <p>8 种简单规则通过 JSON 配置文件驱动，无需改代码即可增删调整。支持「前N位保留 + 中间打码 + 后M位保留」的灵活脱敏格式。每条规则独立启用/禁用，用户可按需自由组合。V5.1 包含：案件号、车牌号、微信号三项新增规则。</p>
+          <p>8 种简单规则通过 JSON 配置文件驱动，无需改代码即可增删调整。支持「前N位保留 + 中间打码 + 后M位保留」的灵活脱敏格式。每条规则独立启用/禁用。</p>
           <div class="layer-detail">
             <span>身份证号 · 前6+****+后4</span>
             <span>手机号 · 前3+****+后4</span>
@@ -1015,8 +1482,8 @@ body::after {
         <div class="layer-num">3</div>
         <div class="layer-body">
           <h3>上下文感知规则 + ONNX BERT-NER</h3>
-          <span class="layer-tag">核心引擎 · V5.1 分块推理</span>
-          <p>人名识别采用<strong>ONNX BERT-NER 深度学习模型</strong>。V5.1 新增 100-token 滑动窗口分块推理（20 重叠），彻底解决 BERT 在长文本上的注意力退化——远处数字/英文不再稀释放在近处的人名信号。公司名、机构名、地址和银行账号均有专用上下文规则，共 15 种脱敏类型覆盖法律文书全场景。</p>
+          <span class="layer-tag">核心引擎 · 分块推理</span>
+          <p>人名识别采用<strong>ONNX BERT-NER 深度学习模型</strong>，100-token 滑动窗口分块推理（20 重叠），解决 BERT 长文本注意力退化。公司名、机构名、地址和银行账号均有专用上下文规则。</p>
           <div class="layer-detail">
             <span>人名 · BERT-NER 分块推理</span>
             <span>100-token 窗口 + 20 重叠</span>
@@ -1034,7 +1501,7 @@ body::after {
         <div class="layer-body">
           <h3>精确格式回写 + PDF 遮罩</h3>
           <span class="layer-tag">docx · PDF · run 级别精度</span>
-          <p>对于 .docx 文件，使用 difflib.SequenceMatcher 精确追踪变更区间，间距 ≤4 字符的碎片自动合并，逐 run 回写到 Word XML 结构，完整保留全部格式。对于 PDF 文件，生成黑色遮罩覆盖敏感信息位置，原文排版完全不变。</p>
+          <p>对于 .docx 文件，使用 difflib.SequenceMatcher 精确追踪变更区间，间距 ≤4 字符的碎片自动合并，逐 run 回写到 Word XML 结构。PDF 生成黑色遮罩覆盖敏感信息位置。</p>
           <div class="layer-detail">
             <span>difflib 精确区间追踪</span>
             <span>碎片合并（≤4字符）</span>
@@ -1042,6 +1509,24 @@ body::after {
             <span>PDF 黑色遮罩覆盖</span>
             <span>表格 + 段落全覆盖</span>
             <span>跨段落代号一致</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第五层 — 回溯还原（金色） -->
+      <div class="layer-card layer-restore reveal reveal-delay-5">
+        <div class="layer-num">5</div>
+        <div class="layer-body">
+          <h3>回溯还原闭环 <span style="font-size:10px;font-weight:700;color:var(--gold);background:rgba(251,191,36,0.12);padding:1px 8px;border-radius:100px;margin-left:6px;">V5.2 新增</span></h3>
+          <span class="layer-tag" style="color:var(--gold);background:rgba(251,191,36,0.08)">脱敏可逆 · JSON 驱动</span>
+          <p>脱敏不是单向的——life法生成完整 JSON 映射表记录每一条替换关系。需要还原时，上传脱敏文件 + 映射表即可<strong>一键还原全部敏感信息</strong>。支持 .txt 和 .docx 格式，还原后保留原始排版。</p>
+          <div class="layer-detail">
+            <span>JSON 映射表驱动</span>
+            <span>一键全量还原</span>
+            <span>txt + docx 双格式</span>
+            <span>Tab 切换 UI</span>
+            <span>还原后格式保留</span>
+            <span>安全闭环链路</span>
           </div>
         </div>
       </div>
@@ -1084,18 +1569,17 @@ body::after {
      ═══════════════════════════════════════════════════════════ -->
   <section class="section cta-section" id="download">
     <div class="cta-glass reveal">
-      <h2>开始使用 life法 V5.1</h2>
+      <h2>开始使用 life法 V5.3</h2>
       <p class="cta-sub">免费、安全、简单。下载即用，无需安装。</p>
 
-      <!-- ★ 下载链接 — 夸克网盘 / GitHub Releases 备用 ★ -->
       <button class="hero-cta" id="mainDownloadBtn">
-        下载 Windows 版 v5.1.0
+        下载 Windows 版 v5.3.0
         <span class="arrow">↓</span>
       </button>
 
       <p class="cta-info">
         支持 Windows 10 及以上版本（64 位）<br>
-        下载后双击即可运行。如遇 SmartScreen 提示，请点击"更多信息"→"仍要运行"。<br>
+        下载后解压 zip，双击 exe 即可运行。如遇 SmartScreen 提示，请点击"更多信息"→"仍要运行"。<br>
         <span style="font-size:12px;color:var(--text-faint);">如以上链接不可用，<a href="#" id="fallbackLink2" style="color:var(--accent);text-decoration:none;">点此使用 GitHub 直链</a></span>
       </p>
     </div>
@@ -1108,10 +1592,13 @@ body::after {
    ═══════════════════════════════════════════════════════════════ -->
 <footer class="footer">
   <p>
-    <strong>life法 V5.1</strong> · 敏感信息脱敏工具<br>
-    完全本地运行 · 数据安全无忧
+    <strong>life法 V5.3</strong> · 敏感信息脱敏工具<br>
+    完全本地运行 · 数据安全无忧 · 开源透明
   </p>
 </footer>
+
+<!-- 回到顶部 -->
+<button class="back-to-top" id="backToTop" aria-label="回到顶部">↑</button>
 
 <!-- ═══════════════════════════════════════════════════════════════
    Script
@@ -1126,12 +1613,24 @@ body::after {
   window.addEventListener('scroll', () => {
     if (!scrollTicking) {
       requestAnimationFrame(() => {
-        navbar.classList.toggle('scrolled', window.scrollY > 60);
+        const y = window.scrollY;
+        navbar.classList.toggle('scrolled', y > 60);
+        // 滚动进度条
+        const docH = document.documentElement.scrollHeight - window.innerHeight;
+        const pct = docH > 0 ? Math.min((y / docH) * 100, 100) : 0;
+        document.getElementById('scrollProgress').style.width = pct + '%';
+        // 回到顶部按钮
+        document.getElementById('backToTop').classList.toggle('visible', y > 500);
         scrollTicking = false;
       });
       scrollTicking = true;
     }
   }, { passive: true });
+
+  // ── 回到顶部 ──
+  document.getElementById('backToTop').addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
 
   // ── 移动端汉堡菜单 ──
   const navToggle = document.getElementById('navToggle');
@@ -1139,7 +1638,6 @@ body::after {
   navToggle.addEventListener('click', () => {
     navLinks.classList.toggle('open');
   });
-  // 点击菜单项后关闭
   navLinks.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => {
       navLinks.classList.remove('open');
@@ -1153,6 +1651,9 @@ body::after {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('visible');
+          // 数字递增触发
+          const numEls = entry.target.querySelectorAll('.stat-num[data-target]');
+          numEls.forEach(el => animateCount(el));
           observer.unobserve(entry.target);
         }
       });
@@ -1162,13 +1663,81 @@ body::after {
     });
     revealEls.forEach(el => observer.observe(el));
   } else {
-    // 回退：直接显示
     revealEls.forEach(el => el.classList.add('visible'));
+    document.querySelectorAll('.stat-num[data-target]').forEach(el => animateCount(el));
   }
+
+  // ── 数字递增动画 ──
+  function animateCount(el) {
+    if (el.dataset.animated) return;
+    el.dataset.animated = '1';
+    const target = parseInt(el.dataset.target, 10);
+    const suffix = el.dataset.suffix || '';
+    const duration = 800;
+    const start = performance.now();
+    function step(ts) {
+      const elapsed = ts - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // easeOutCubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(eased * target) + suffix;
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        el.textContent = target + suffix;
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  // ── 鼠标聚光灯 ──
+  const spotlight = document.getElementById('spotlight');
+  let mouseX = -999, mouseY = -999;
+  let currentX = -999, currentY = -999;
+
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    if (!spotlight.classList.contains('active')) {
+      spotlight.classList.add('active');
+    }
+  }, { passive: true });
+
+  document.addEventListener('mouseleave', () => {
+    spotlight.classList.remove('active');
+  });
+
+  function updateSpotlight() {
+    // 缓动跟随
+    const speed = 0.08;
+    currentX += (mouseX - currentX) * speed;
+    currentY += (mouseY - currentY) * speed;
+    spotlight.style.left = currentX + 'px';
+    spotlight.style.top = currentY + 'px';
+    requestAnimationFrame(updateSpotlight);
+  }
+  requestAnimationFrame(updateSpotlight);
+
+  // ── 功能卡片 3D 倾斜 ──
+  document.querySelectorAll('.feature-card').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rotateX = ((y - centerY) / centerY) * -6;
+      const rotateY = ((x - centerX) / centerX) * 6;
+      card.style.transform = `translateY(-6px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+    });
+  });
 
   // ── 下载按钮 ──
   const DOWNLOAD_URL = "https://pan.quark.cn/s/1c47e8fe4d17";
-  const DOWNLOAD_FALLBACK = "https://github.com/hanbills52/hanbill-/releases/download/v5.1.0/life._V5.1.zip";
+  const DOWNLOAD_FALLBACK = "https://github.com/hanbills52/hanbill-/releases/download/v5.3.0/life%E6%B3%95_V5.3.zip";
 
   function handleDownload(e) {
     e.preventDefault();
@@ -1184,6 +1753,19 @@ body::after {
   document.getElementById("mainDownloadBtn").addEventListener("click", handleDownload);
   document.getElementById("fallbackLink").addEventListener("click", useFallback);
   document.getElementById("fallbackLink2").addEventListener("click", useFallback);
+
+  // ── 背景光斑视差滚动 ──
+  const orbs = document.querySelectorAll('.bg-art .orb');
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    const maxShift = 40;
+    orbs.forEach((orb, i) => {
+      const speed = 0.02 + i * 0.008;
+      const shift = Math.min(y * speed, maxShift);
+      orb.style.transform = `translateY(${shift}px)`;
+    });
+  }, { passive: true });
+
 })();
 </script>
 </body>
