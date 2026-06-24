@@ -81,7 +81,7 @@ body {
    ═══════════════════════════════════════════════════════════════ */
 .spotlight {
   position: fixed; pointer-events: none; z-index: 0;
-  width: 700px; height: 700px;
+  width: 300px; height: 300px;
   background: radial-gradient(circle at center,
     rgba(117,178,200,0.04) 0%,
     rgba(139,92,246,0.02) 30%,
@@ -362,13 +362,11 @@ body::after {
   letter-spacing: -0.03em;
   line-height: 1.05;
   background: linear-gradient(135deg, #e4e7ec 0%, #b0c4d0 30%, #75b2c8 55%, #a78bfa 75%, #8ec9db 100%);
-  background-size: 300% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-wrap: balance;
   margin-bottom: 20px;
-  animation: shimmer 6s ease-in-out infinite;
 }
 .hero .subtitle {
   font-size: clamp(17px, 2.2vw, 21px);
@@ -475,11 +473,6 @@ body::after {
   color: var(--text);
   border-color: rgba(255,255,255,0.14);
   background: rgba(255,255,255,0.05);
-}
-.version-highlights .vh-chip.new {
-  color: var(--gold);
-  border-color: rgba(251,191,36,0.2);
-  background: rgba(251,191,36,0.06);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1230,7 +1223,7 @@ body::after {
     <h1>life法 V5.3</h1>
     <p class="subtitle">完全本地运行的敏感信息脱敏工具</p>
     <p class="tagline">
-      分块推理 ONNX NER · 天干假名法 · <em>回溯还原闭环</em> · <em>通用自定义实体</em> · PDF遮罩 · 15类规则 · 永久免费
+      分块推理 ONNX NER · 天干假名法 · 回溯还原闭环 · 通用自定义实体 · PDF遮罩 · 15类规则 · 永久免费
     </p>
 
     <button class="hero-cta" id="heroDownloadBtn">
@@ -1247,8 +1240,8 @@ body::after {
       <span>64 位</span>
     </div>
     <div class="version-highlights">
-      <span class="vh-chip new">🆕 V5.3 通用自定义实体</span>
-      <span class="vh-chip new">🆕 V5.2 回溯还原闭环</span>
+      <span class="vh-chip">V5.3 通用自定义实体</span>
+      <span class="vh-chip">V5.2 回溯还原闭环</span>
       <span class="vh-chip">动态光晕 UI</span>
       <span class="vh-chip">卡片景深系统</span>
       <span class="vh-chip">微交互反馈</span>
